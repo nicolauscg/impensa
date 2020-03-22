@@ -1,9 +1,8 @@
 package main
 
 import (
-	_ "github.com/nicolauscg/impensa/routers"
-
 	"github.com/astaxie/beego"
+	_ "github.com/nicolauscg/impensa/routers"
 )
 
 func main() {
