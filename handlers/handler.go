@@ -1,4 +1,4 @@
-package database
+package handler
 
 import (
 	"context"
@@ -21,11 +21,15 @@ var (
 )
 
 type Handler struct {
-	db             *mongo.Database
-	TransactionOrm models.TransactionOrmer
+	db   *mongo.Database
+	Orms *Entity
 }
 
-func NewHandler() (*Handler, error) {
+type Entity struct {
+	Transaction models.TransactionOrmer
+}
+
+func NewHandler(databaseName string) (*Handler, error) {
 	once.Do(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -44,9 +48,9 @@ func NewHandler() (*Handler, error) {
 			return
 		}
 
+		handler = &Handler{db: client.Database(databaseName)}
+		handler.Orms = &Entity{models.NewTransactionOrm(handler.db)}
 		beego.Info("[handler/handler] database successfully connected.")
-		handler = &Handler{db: client.Database("test")}
-		handler.TransactionOrm = models.NewTransactionOrm(handler.db)
 	})
 
 	return handler, err
