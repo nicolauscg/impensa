@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nicolauscg/impensa/database"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,19 +22,19 @@ func (t *Transaction) String() string {
 }
 
 type TransactionOrmer interface {
-	GetAll() (transactions []*Transaction, err error)
+	InsertOne(amount float32, description string) (*mongo.InsertOneResult, error)
+	GetAll() ([]*Transaction, error)
+	GetOneById(id string) (*Transaction, error)
+	UpdateOneById(id string, update *Transaction) (*mongo.UpdateResult, error)
+	DeleteManyById(ids []string) (*mongo.DeleteResult, error)
 }
 
 type transactionOrm struct {
 	collection *mongo.Collection
 }
 
-func NewTransactionOrm() (*transactionOrm, error) {
-	client, err := database.GetClient()
-	if err != nil {
-		return nil, err
-	}
-	return &transactionOrm{client.Collection("transactions")}, err
+func NewTransactionOrm(db *mongo.Database) *transactionOrm {
+	return &transactionOrm{db.Collection("transactions")}
 }
 
 func (o *transactionOrm) InsertOne(amount float32, description string) (*mongo.InsertOneResult, error) {

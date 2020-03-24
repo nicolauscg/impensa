@@ -4,23 +4,20 @@ import (
 	"encoding/json"
 
 	"github.com/astaxie/beego"
+	handlerPkg "github.com/nicolauscg/impensa/handler"
 	"github.com/nicolauscg/impensa/models"
 )
 
 type TransactionController struct {
 	beego.Controller
+	Handler *handlerPkg.Handler
 }
 
 // @router / [post]
 func (o *TransactionController) Post() {
 	var transaction models.Transaction
 	json.Unmarshal(o.Ctx.Input.RequestBody, &transaction)
-	orm, err := models.NewTransactionOrm()
-	if err != nil {
-		o.Data["json"] = err.Error()
-		o.ServeJSON()
-	}
-	insertResult, err := orm.InsertOne(transaction.Amount, transaction.Description)
+	insertResult, err := o.Handler.TransactionOrm.InsertOne(transaction.Amount, transaction.Description)
 	if err != nil {
 		o.Data["json"] = err.Error()
 		o.ServeJSON()
@@ -32,13 +29,8 @@ func (o *TransactionController) Post() {
 // @router /:transactionId [get]
 func (o *TransactionController) Get() {
 	transactionId := o.Ctx.Input.Param(":transactionId")
-	orm, err := models.NewTransactionOrm()
-	if err != nil {
-		o.Data["json"] = err.Error()
-		o.ServeJSON()
-	}
 	if transactionId != "" {
-		transaction, err := orm.GetOneById(transactionId)
+		transaction, err := o.Handler.TransactionOrm.GetOneById(transactionId)
 		if err != nil {
 			o.Data["json"] = err.Error()
 		} else {
@@ -50,12 +42,7 @@ func (o *TransactionController) Get() {
 
 // @router / [get]
 func (o *TransactionController) GetAll() {
-	orm, err := models.NewTransactionOrm()
-	if err != nil {
-		o.Data["json"] = err.Error()
-		o.ServeJSON()
-	}
-	transactions, err := orm.GetAll()
+	transactions, err := o.Handler.TransactionOrm.GetAll()
 	if err != nil {
 		o.Data["json"] = err.Error()
 		o.ServeJSON()
@@ -68,14 +55,7 @@ func (o *TransactionController) GetAll() {
 func (o *TransactionController) Put() {
 	var transaction models.Transaction
 	json.Unmarshal(o.Ctx.Input.RequestBody, &transaction)
-
-	orm, err := models.NewTransactionOrm()
-	if err != nil {
-		o.Data["json"] = err.Error()
-		o.ServeJSON()
-	}
-
-	updateResult, err := orm.UpdateOneById(transaction.Id, &transaction)
+	updateResult, err := o.Handler.TransactionOrm.UpdateOneById(transaction.Id, &transaction)
 	if err != nil {
 		o.Data["json"] = err.Error()
 	} else {
@@ -88,12 +68,7 @@ func (o *TransactionController) Put() {
 func (o *TransactionController) Delete() {
 	var payload map[string][]string
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
-	orm, err := models.NewTransactionOrm()
-	if err != nil {
-		o.Data["json"] = err.Error()
-		o.ServeJSON()
-	}
-	deleteResult, err := orm.DeleteManyById(payload["transactionIds"])
+	deleteResult, err := o.Handler.TransactionOrm.DeleteManyById(payload["transactionIds"])
 	if err != nil {
 		o.Data["json"] = err.Error()
 		o.ServeJSON()
