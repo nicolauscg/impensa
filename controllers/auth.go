@@ -39,6 +39,7 @@ func (o *AuthController) Login() {
 
 		return
 	}
+
 	token, err := createJwtToken(user.Id)
 	if err != nil {
 		o.Data["json"] = dt.NewErrorResponse(401, err.Error())
@@ -72,20 +73,22 @@ func AuthFilter(ctx *context.Context) {
 		return
 	}
 
-	err = validateJwtToken(tokenString)
+	claims, err := validateJwtToken(tokenString)
 	if err != nil {
 		ctx.Output.SetStatus(403)
 		errorResponseBody, _ := json.Marshal(dt.NewErrorResponse(403, err.Error()))
 		ctx.Output.Body(errorResponseBody)
 		return
 	}
+
+	ctx.Input.SetParam("userId", claims["userId"].(string))
 }
 
 func createJwtToken(userId primitive.ObjectID) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["userId"] = userId
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix() //Token expires after 1 hour
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() //Token expires after 1 hour
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString([]byte(os.Getenv("API_SECRET")))
@@ -100,19 +103,19 @@ func extractJwtToken(ctx *context.Context) (string, error) {
 	return "", errors.New("bearer token not found in Authorization header")
 }
 
-func validateJwtToken(tokenString string) (err error) {
+func validateJwtToken(tokenString string) (claims jwt.MapClaims, err error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(os.Getenv("API_SECRET")), nil
 	})
-
 	if err != nil {
 		return
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); !ok || !token.Valid || claims == nil {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
 		err = errors.New("jwt token not valid")
 	}
 

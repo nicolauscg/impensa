@@ -11,7 +11,8 @@ import (
 
 type TransactionOrmer interface {
 	InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error)
-	GetAll() ([]*dt.Transaction, error)
+	GetManyByOwnerId(ownerId primitive.ObjectID) ([]*dt.Transaction, error)
+	GetOwnerIdsByIds(ids []primitive.ObjectID) ([]primitive.ObjectID, error)
 	GetOneById(id primitive.ObjectID) (*dt.Transaction, error)
 	UpdateManyByIds(ids []primitive.ObjectID, update *dt.TransactionUpdateFields) (*mongo.UpdateResult, error)
 	DeleteManyByIds(ids []primitive.ObjectID) (*mongo.DeleteResult, error)
@@ -29,8 +30,8 @@ func (o *transactionOrm) InsertOne(insert dt.TransactionInsert) (*mongo.InsertOn
 	return o.transactionCollection.InsertOne(context.TODO(), insert)
 }
 
-func (o *transactionOrm) GetAll() (transactions []*dt.Transaction, err error) {
-	cur, err := o.transactionCollection.Find(context.TODO(), bson.D{{}})
+func (o *transactionOrm) GetManyByOwnerId(ownerId primitive.ObjectID) (transactions []*dt.Transaction, err error) {
+	cur, err := o.transactionCollection.Find(context.TODO(), bson.D{{"owner", ownerId}})
 	if err != nil {
 		return
 	}
@@ -39,6 +40,28 @@ func (o *transactionOrm) GetAll() (transactions []*dt.Transaction, err error) {
 		return
 	}
 
+	return
+}
+
+func (o *transactionOrm) GetOwnerIdsByIds(ids []primitive.ObjectID) (ownerIds []primitive.ObjectID, err error) {
+	var aggregateResult []map[string]primitive.ObjectID
+	ownerIds = make([]primitive.ObjectID, 0)
+	cur, err := o.transactionCollection.Aggregate(context.TODO(), bson.A{
+		bson.D{{"$match", bson.D{{"_id", bson.D{{"$in", ids}}}}}},
+		bson.D{{"$group", bson.D{
+			{"_id", "$owner"},
+		}}},
+	})
+	if err != nil {
+		return
+	}
+	err = cur.All(context.TODO(), &aggregateResult)
+	if err != nil {
+		return
+	}
+	for _, elem := range aggregateResult {
+		ownerIds = append(ownerIds, elem["_id"])
+	}
 	return
 }
 
