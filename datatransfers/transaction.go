@@ -25,10 +25,16 @@ type TransactionInsert struct {
 }
 
 type TransactionUpdate struct {
-	Ids    []primitive.ObjectID `json:"ids"`
-	Update TransactionInsert    `json:"update"`
+	Ids    []primitive.ObjectID
+	Update TransactionUpdateFields
+}
+
+type TransactionUpdateFields struct {
+	Amount      float32   `bson:"amount,omitempty"`
+	Description string    `bson:"description,omitempty"`
+	DateTime    time.Time `bson:"dateTime,omitempty"`
 }
 
 type TransactionDelete struct {
-	Ids []primitive.ObjectID `json:"ids"`
+	Ids []primitive.ObjectID
 }

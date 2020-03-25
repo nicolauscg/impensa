@@ -13,7 +13,7 @@ type TransactionOrmer interface {
 	InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error)
 	GetAll() ([]*dt.Transaction, error)
 	GetOneById(id primitive.ObjectID) (*dt.Transaction, error)
-	UpdateManyByIds(ids []primitive.ObjectID, update *dt.TransactionInsert) (*mongo.UpdateResult, error)
+	UpdateManyByIds(ids []primitive.ObjectID, update *dt.TransactionUpdateFields) (*mongo.UpdateResult, error)
 	DeleteManyByIds(ids []primitive.ObjectID) (*mongo.DeleteResult, error)
 }
 
@@ -51,7 +51,7 @@ func (o *transactionOrm) GetOneById(id primitive.ObjectID) (transaction *dt.Tran
 	return
 }
 
-func (o *transactionOrm) UpdateManyByIds(ids []primitive.ObjectID, update *dt.TransactionInsert) (updateResult *mongo.UpdateResult, err error) {
+func (o *transactionOrm) UpdateManyByIds(ids []primitive.ObjectID, update *dt.TransactionUpdateFields) (updateResult *mongo.UpdateResult, err error) {
 	updateResult, err = o.transactionCollection.UpdateMany(context.Background(), bson.D{{"_id", bson.D{{"$in", ids}}}}, bson.D{{"$set", update}})
 	if err != nil {
 		return

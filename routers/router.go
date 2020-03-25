@@ -13,11 +13,24 @@ func init() {
 	}
 
 	ns := beego.NewNamespace("v1",
+		beego.NSNamespace("/auth",
+			beego.NSInclude(
+				&controllers.AuthController{Handler: handler},
+			),
+		),
 		beego.NSNamespace("/transaction",
+			beego.NSBefore(controllers.AuthFilter),
 			beego.NSInclude(
 				&controllers.TransactionController{Handler: handler},
 			),
 		),
+		beego.NSNamespace("/user",
+			beego.NSBefore(controllers.AuthFilter),
+			beego.NSInclude(
+				&controllers.UserController{Handler: handler},
+			),
+		),
 	)
+
 	beego.AddNamespace(ns)
 }

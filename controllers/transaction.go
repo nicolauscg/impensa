@@ -20,10 +20,10 @@ func (o *TransactionController) Post() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &transaction)
 	insertResult, err := o.Handler.Orms.Transaction.InsertOne(transaction)
 	if err != nil {
-		o.Data["json"] = err.Error()
+		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
 		o.ServeJSON()
 	}
-	o.Data["json"] = insertResult
+	o.Data["json"] = dt.NewSuccessResponse(insertResult)
 	o.ServeJSON()
 }
 
@@ -31,14 +31,14 @@ func (o *TransactionController) Post() {
 func (o *TransactionController) Get() {
 	transactionId, err := primitive.ObjectIDFromHex(o.Ctx.Input.Param(":transactionId"))
 	if err != nil {
-		o.Data["json"] = err.Error()
+		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
 		o.ServeJSON()
 	}
 	transaction, err := o.Handler.Orms.Transaction.GetOneById(transactionId)
 	if err != nil {
-		o.Data["json"] = err.Error()
+		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
 	} else {
-		o.Data["json"] = transaction
+		o.Data["json"] = dt.NewSuccessResponse(transaction)
 	}
 	o.ServeJSON()
 }
@@ -47,10 +47,10 @@ func (o *TransactionController) Get() {
 func (o *TransactionController) GetAll() {
 	transactions, err := o.Handler.Orms.Transaction.GetAll()
 	if err != nil {
-		o.Data["json"] = err.Error()
+		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
 		o.ServeJSON()
 	}
-	o.Data["json"] = transactions
+	o.Data["json"] = dt.NewSuccessResponse(transactions)
 	o.ServeJSON()
 }
 
@@ -60,9 +60,9 @@ func (o *TransactionController) Put() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
 	updateResult, err := o.Handler.Orms.Transaction.UpdateManyByIds(payload.Ids, &payload.Update)
 	if err != nil {
-		o.Data["json"] = err.Error()
+		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
 	} else {
-		o.Data["json"] = updateResult
+		o.Data["json"] = dt.NewSuccessResponse(updateResult)
 	}
 	o.ServeJSON()
 }
@@ -73,9 +73,9 @@ func (o *TransactionController) Delete() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
 	deleteResult, err := o.Handler.Orms.Transaction.DeleteManyByIds(payload.Ids)
 	if err != nil {
-		o.Data["json"] = err.Error()
+		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
 		o.ServeJSON()
 	}
-	o.Data["json"] = deleteResult
+	o.Data["json"] = dt.NewSuccessResponse(deleteResult)
 	o.ServeJSON()
 }

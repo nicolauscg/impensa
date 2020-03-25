@@ -26,6 +26,7 @@ type Handler struct {
 }
 
 type Entity struct {
+	User        models.UserOrmer
 	Transaction models.TransactionOrmer
 }
 
@@ -49,7 +50,10 @@ func NewHandler(databaseName string) (*Handler, error) {
 		}
 
 		handler = &Handler{db: client.Database(databaseName)}
-		handler.Orms = &Entity{models.NewTransactionOrm(handler.db)}
+		handler.Orms = &Entity{
+			models.NewUserOrm(handler.db),
+			models.NewTransactionOrm(handler.db),
+		}
 		beego.Info("[handler/handler] database successfully connected.")
 	})
 
