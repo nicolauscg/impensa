@@ -2,6 +2,7 @@ profiles/
 # Configs
 *.conf
 !nginx.conf
+!app.conf
 swagger*
 *.tmp
 
