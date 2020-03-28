@@ -41,7 +41,7 @@ axios.interceptors.response.use(
   error => {
     const statusCode = error.response.status;
 
-    if (statusCode === 401 && userDataString) {
+    if (statusCode === 401) {
       clearUserObject();
       Reflect.deleteProperty(axios.defaults.headers.common, "Authorization");
       history.push("/auth");
