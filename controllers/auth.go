@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -22,10 +21,9 @@ type AuthController struct {
 }
 
 // @Title login user
+// @Param credential  body  dt.AuthLogin true  "credential"
 // @router /login [post]
-func (o *AuthController) Login() {
-	var credential dt.AuthLogin
-	json.Unmarshal(o.Ctx.Input.RequestBody, &credential)
+func (o *AuthController) Login(credential dt.AuthLogin) {
 	user, err := o.Handler.Orms.User.GetOneByEmailAndPassword(credential.Email, credential.Password)
 	if err == mongo.ErrNoDocuments {
 		o.ResponseBuilder.SetError(http.StatusUnauthorized, constants.ErrorIncorrectCredential).ServeJSON()
@@ -47,11 +45,10 @@ func (o *AuthController) Login() {
 }
 
 // @Title register user
+// @Param newUser  body  dt.AuthRegister true  "newUser"
 // @router /register [post]
-func (o *AuthController) Register() {
-	var user dt.AuthRegister
-	json.Unmarshal(o.Ctx.Input.RequestBody, &user)
-	insertResult, err := o.Handler.Orms.User.InsertOne(user)
+func (o *AuthController) Register(newUser dt.AuthRegister) {
+	insertResult, err := o.Handler.Orms.User.InsertOne(newUser)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 

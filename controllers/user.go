@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/nicolauscg/impensa/constants"
@@ -14,9 +13,10 @@ type UserController struct {
 }
 
 // @Title get a user by id
-// @router /:userId [get]
-func (o *UserController) Get() {
-	userId, err := primitive.ObjectIDFromHex(o.Ctx.Input.Param(":userId"))
+// @Param   id    path    string     true  "id"
+// @router /:id [get]
+func (o *UserController) GetUser(id string) {
+	userId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
@@ -32,16 +32,15 @@ func (o *UserController) Get() {
 }
 
 // @Title update a user by id
+// @Param userUpdate  body  dt.UserDelete true  "userUpdate"
 // @router / [put]
-func (o *UserController) Put() {
-	var payload dt.UserUpdate
-	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
-	if payload.Id != o.UserId {
+func (o *UserController) UpdateUser(userUpdate dt.UserUpdate) {
+	if userUpdate.Id != o.UserId {
 		o.ResponseBuilder.SetError(403, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 
 		return
 	}
-	updateResult, err := o.Handler.Orms.User.UpdateOneById(payload.Id, &payload.Update)
+	updateResult, err := o.Handler.Orms.User.UpdateOneById(userUpdate.Id, &userUpdate.Update)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
@@ -51,16 +50,15 @@ func (o *UserController) Put() {
 }
 
 // @Title delete a user by id
+// @Param userDelete  body  dt.UserDelete true  "userDelete"
 // @router / [delete]
-func (o *UserController) Delete() {
-	var payload dt.UserDelete
-	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
-	if payload.Id != o.UserId {
+func (o *UserController) DeleteUser(userDelete dt.UserDelete) {
+	if userDelete.Id != o.UserId {
 		o.ResponseBuilder.SetError(403, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 
 		return
 	}
-	deleteResult, err := o.Handler.Orms.User.DeleteOneById(payload.Id)
+	deleteResult, err := o.Handler.Orms.User.DeleteOneById(userDelete.Id)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 

@@ -12,7 +12,9 @@ func init() {
             Method: "Login",
             Router: `/login`,
             AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("credential", param.IsRequired, param.InBody),
+			),
             Filters: nil,
             Params: nil})
 
@@ -21,22 +23,26 @@ func init() {
             Method: "Register",
             Router: `/register`,
             AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("newUser", param.IsRequired, param.InBody),
+			),
             Filters: nil,
             Params: nil})
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
-            Method: "Post",
+            Method: "CreateTransaction",
             Router: `/`,
             AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("newTransaction", param.IsRequired, param.InBody),
+			),
             Filters: nil,
             Params: nil})
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
-            Method: "GetAll",
+            Method: "GetAllTransactions",
             Router: `/`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
@@ -45,55 +51,67 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
-            Method: "Put",
+            Method: "UpdateTransactions",
             Router: `/`,
             AllowHTTPMethods: []string{"put"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("transactionUpdate", param.IsRequired, param.InBody),
+			),
             Filters: nil,
             Params: nil})
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
-            Method: "Delete",
+            Method: "DeleteTransactions",
             Router: `/`,
             AllowHTTPMethods: []string{"delete"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("transactionDelete", param.IsRequired, param.InBody),
+			),
             Filters: nil,
             Params: nil})
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
-            Method: "Get",
-            Router: `/:transactionId`,
+            Method: "GetTransaction",
+            Router: `/:id`,
             AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("id", param.IsRequired, param.InPath),
+			),
             Filters: nil,
             Params: nil})
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"],
         beego.ControllerComments{
-            Method: "Put",
+            Method: "UpdateUser",
             Router: `/`,
             AllowHTTPMethods: []string{"put"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("userUpdate", param.IsRequired, param.InBody),
+			),
             Filters: nil,
             Params: nil})
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"],
         beego.ControllerComments{
-            Method: "Delete",
+            Method: "DeleteUser",
             Router: `/`,
             AllowHTTPMethods: []string{"delete"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("userDelete", param.IsRequired, param.InBody),
+			),
             Filters: nil,
             Params: nil})
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"],
         beego.ControllerComments{
-            Method: "Get",
-            Router: `/:userId`,
+            Method: "GetUser",
+            Router: `/:id`,
             AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("id", param.IsRequired, param.InPath),
+			),
             Filters: nil,
             Params: nil})
 
