@@ -18,8 +18,8 @@ type ResponseBuilder interface {
 }
 
 type responseBuild struct {
-	outputContext *context.BeegoOutput
-	response      apiResponse
+	responseContext *context.Response
+	response        apiResponse
 }
 
 type apiResponse struct {
@@ -47,9 +47,9 @@ type callInfo struct {
 	Line        int    `json:"line"`
 }
 
-func NewResponseBuilder(outputContext *context.BeegoOutput) *responseBuild {
-	r := &responseBuild{outputContext, apiResponse{}}
-	r.outputContext.Header("Content-Type", "application/json")
+func NewResponseBuilder(responseContext *context.Response) *responseBuild {
+	r := &responseBuild{responseContext, apiResponse{}}
+	r.responseContext.ResponseWriter.Header().Add("Content-Type", "application/json")
 
 	return r
 }
@@ -61,7 +61,7 @@ func (r *responseBuild) SetData(data interface{}) *responseBuild {
 }
 
 func (r *responseBuild) SetError(code int, message string) *responseBuild {
-	r.outputContext.SetStatus(code)
+	r.responseContext.ResponseWriter.WriteHeader(code)
 	r.response.Error = NewErrorResponse(code, message)
 
 	return r
@@ -75,7 +75,7 @@ func (r *responseBuild) AddAdditionalError(domain string, reason string, message
 
 func (r *responseBuild) ServeJSON() {
 	responseBody, _ := json.Marshal(r.response)
-	r.outputContext.Body(responseBody)
+	r.responseContext.ResponseWriter.Write(responseBody)
 }
 
 func NewErrorResponse(code int, message string) *apiResponseError {

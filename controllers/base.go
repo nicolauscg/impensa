@@ -18,5 +18,5 @@ func (a *BaseController) Prepare() {
 	if userId := a.Ctx.Input.Param("userId"); len(userId) > 0 {
 		a.UserId, _ = primitive.ObjectIDFromHex(userId)
 	}
-	a.ResponseBuilder = dt.NewResponseBuilder(a.Ctx.Output)
+	a.ResponseBuilder = dt.NewResponseBuilder(a.Ctx.ResponseWriter)
 }
