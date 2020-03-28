@@ -22,6 +22,7 @@ module.exports = {
   },
   plugins: ["react"],
   rules: {
+    "react/prop-types": "off",
     "accessor-pairs": "error",
     "jsx-a11y/anchor-is-valid": 0,
     "array-bracket-newline": "error",
