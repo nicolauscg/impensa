@@ -8,45 +8,40 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	jwt "github.com/dgrijalva/jwt-go"
 	dt "github.com/nicolauscg/impensa/datatransfers"
-	handlerPkg "github.com/nicolauscg/impensa/handlers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type AuthController struct {
-	beego.Controller
-	Handler *handlerPkg.Handler
+	BaseController
 }
 
 // @Title login user
 // @router /login [post]
 func (o *AuthController) Login() {
-	var credential dt.UserInsert
+	var credential dt.AuthLogin
 	json.Unmarshal(o.Ctx.Input.RequestBody, &credential)
 	user, err := o.Handler.Orms.User.GetOneByEmailAndPassword(credential.Email, credential.Password)
 	if err == mongo.ErrNoDocuments {
-		o.Data["json"] = dt.NewErrorResponse(401, "incorrect username or password")
-		o.ServeJSON()
+		o.ResponseBuilder.SetError(401, "incorrect username or password").ServeJSON()
 
 		return
 	} else if err != nil {
-		o.Data["json"] = dt.NewErrorResponse(401, err.Error())
-		o.ServeJSON()
+		o.ResponseBuilder.SetError(401, err.Error()).ServeJSON()
 
 		return
 	}
 
 	token, err := createJwtToken(user.Id)
 	if err != nil {
-		o.Data["json"] = dt.NewErrorResponse(401, err.Error())
-	} else {
-		o.Data["json"] = dt.NewSuccessResponse(map[string]string{"token": token})
+		o.ResponseBuilder.SetError(401, err.Error()).ServeJSON()
+
+		return
 	}
-	o.ServeJSON()
+	o.ResponseBuilder.SetData(dt.AuthPayload{user.Id, user.Email, token}).ServeJSON()
 }
 
 // @Title register user
@@ -56,28 +51,27 @@ func (o *AuthController) Register() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &user)
 	insertResult, err := o.Handler.Orms.User.InsertOne(user)
 	if err != nil {
-		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
-		o.ServeJSON()
+		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+
+		return
 	}
-	o.Data["json"] = dt.NewSuccessResponse(insertResult)
-	o.ServeJSON()
+	o.ResponseBuilder.SetData(insertResult).ServeJSON()
 }
 
 func AuthFilter(ctx *context.Context) {
+	responseBuilder := dt.NewResponseBuilder(ctx.Output)
 	ctx.Output.Header("Content-Type", "application/json")
 	tokenString, err := extractJwtToken(ctx)
 	if err != nil {
-		ctx.Output.SetStatus(403)
-		errorResponseBody, _ := json.Marshal(dt.NewErrorResponse(403, err.Error()))
-		ctx.Output.Body(errorResponseBody)
+		responseBuilder.SetError(401, err.Error())
+
 		return
 	}
 
 	claims, err := validateJwtToken(tokenString)
 	if err != nil {
-		ctx.Output.SetStatus(403)
-		errorResponseBody, _ := json.Marshal(dt.NewErrorResponse(403, err.Error()))
-		ctx.Output.Body(errorResponseBody)
+		responseBuilder.SetError(401, err.Error())
+
 		return
 	}
 

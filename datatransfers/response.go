@@ -1,46 +1,43 @@
 package datatransfers
 
 import (
+	"encoding/json"
 	"path"
 	"runtime"
 	"strings"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/context"
 )
 
-type ApiResponse struct {
-	Data  interface{}       `json:"data"`
-	Error *ApiResponseError `json:"error,omitempty"`
+type ResponseBuilder interface {
+	SetData(data interface{}) *responseBuild
+	SetError(code int, message string) *responseBuild
+	AddAdditionalError(domain string, reason string, message string) *responseBuild
+	ServeJSON()
 }
 
-type ApiResponseError struct {
+type responseBuild struct {
+	outputContext *context.BeegoOutput
+	response      apiResponse
+}
+
+type apiResponse struct {
+	Data  interface{}       `json:"data"`
+	Error *apiResponseError `json:"error,omitempty"`
+}
+
+type apiResponseError struct {
 	Code     int                          `json:"code"`
 	Message  string                       `json:"message"`
 	CallInfo *callInfo                    `json:"callInfo"`
-	Errors   []ApiResponseAdditionalError `json:"errors"`
+	Errors   []apiResponseAdditionalError `json:"errors"`
 }
 
-type ApiResponseAdditionalError struct {
+type apiResponseAdditionalError struct {
 	Domain  string `json:"domain"`
 	Reason  string `json:"reason"`
 	Message string `json:"message"`
-}
-
-func NewSuccessResponse(data interface{}) *ApiResponse {
-	return &ApiResponse{Data: data}
-}
-
-func NewErrorResponse(code int, message string) *ApiResponse {
-	response := &ApiResponse{nil, &ApiResponseError{code, message, retrieveCallInfo(), make([]ApiResponseAdditionalError, 0)}}
-	if beego.AppConfig.String("runmode") == "dev" {
-		response.Error.CallInfo = retrieveCallInfo()
-	}
-
-	return response
-}
-
-func (r *ApiResponse) AddError(domain string, reason string, message string) {
-	r.Error.Errors = append(r.Error.Errors, ApiResponseAdditionalError{domain, reason, message})
 }
 
 type callInfo struct {
@@ -48,6 +45,47 @@ type callInfo struct {
 	FileName    string `json:"fileName"`
 	FuncName    string `json:"funcName"`
 	Line        int    `json:"line"`
+}
+
+func NewResponseBuilder(outputContext *context.BeegoOutput) *responseBuild {
+	r := &responseBuild{outputContext, apiResponse{}}
+	r.outputContext.Header("Content-Type", "application/json")
+
+	return r
+}
+
+func (r *responseBuild) SetData(data interface{}) *responseBuild {
+	r.response.Data = data
+
+	return r
+}
+
+func (r *responseBuild) SetError(code int, message string) *responseBuild {
+	r.outputContext.SetStatus(code)
+	r.response.Error = NewErrorResponse(code, message)
+
+	return r
+}
+
+func (r *responseBuild) AddAdditionalError(domain string, reason string, message string) *responseBuild {
+	r.response.Error.Errors = append(r.response.Error.Errors, apiResponseAdditionalError{domain, reason, message})
+
+	return r
+}
+
+func (r *responseBuild) ServeJSON() {
+	responseBody, _ := json.Marshal(r.response)
+	r.outputContext.Body(responseBody)
+}
+
+func NewErrorResponse(code int, message string) *apiResponseError {
+	response := &apiResponseError{code, message, nil, make([]apiResponseAdditionalError, 0)}
+
+	if beego.AppConfig.String("runmode") == "dev" {
+		response.CallInfo = retrieveCallInfo()
+	}
+
+	return response
 }
 
 // source https://stackoverflow.com/a/25265493/11337921

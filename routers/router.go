@@ -28,19 +28,19 @@ func init() {
 		})),
 		beego.NSNamespace("/auth",
 			beego.NSInclude(
-				&controllers.AuthController{Handler: handler},
+				&controllers.AuthController{controllers.BaseController{Handler: handler}},
 			),
 		),
 		beego.NSNamespace("/transaction",
 			beego.NSBefore(controllers.AuthFilter),
 			beego.NSInclude(
-				&controllers.TransactionController{Handler: handler},
+				&controllers.TransactionController{controllers.BaseController{Handler: handler}},
 			),
 		),
 		beego.NSNamespace("/user",
 			beego.NSBefore(controllers.AuthFilter),
 			beego.NSInclude(
-				&controllers.UserController{Handler: handler},
+				&controllers.UserController{controllers.BaseController{Handler: handler}},
 			),
 		),
 	)

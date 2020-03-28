@@ -3,15 +3,12 @@ package controllers
 import (
 	"encoding/json"
 
-	"github.com/astaxie/beego"
 	dt "github.com/nicolauscg/impensa/datatransfers"
-	handlerPkg "github.com/nicolauscg/impensa/handlers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserController struct {
-	beego.Controller
-	Handler *handlerPkg.Handler
+	BaseController
 }
 
 // @Title get a user by id
@@ -19,16 +16,17 @@ type UserController struct {
 func (o *UserController) Get() {
 	userId, err := primitive.ObjectIDFromHex(o.Ctx.Input.Param(":userId"))
 	if err != nil {
-		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
-		o.ServeJSON()
+		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+
+		return
 	}
 	user, err := o.Handler.Orms.User.GetOneById(userId)
 	if err != nil {
-		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
-	} else {
-		o.Data["json"] = dt.NewSuccessResponse(user)
+		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+
+		return
 	}
-	o.ServeJSON()
+	o.ResponseBuilder.SetData(user).ServeJSON()
 }
 
 // @Title update a user by id
@@ -38,11 +36,11 @@ func (o *UserController) Put() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
 	updateResult, err := o.Handler.Orms.User.UpdateOneById(payload.Id, &payload.Update)
 	if err != nil {
-		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
-	} else {
-		o.Data["json"] = dt.NewSuccessResponse(updateResult)
+		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+
+		return
 	}
-	o.ServeJSON()
+	o.ResponseBuilder.SetData(updateResult).ServeJSON()
 }
 
 // @Title delete a user by id
@@ -52,9 +50,9 @@ func (o *UserController) Delete() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
 	deleteResult, err := o.Handler.Orms.User.DeleteOneById(payload.Id)
 	if err != nil {
-		o.Data["json"] = dt.NewErrorResponse(500, err.Error())
-		o.ServeJSON()
+		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+
+		return
 	}
-	o.Data["json"] = dt.NewSuccessResponse(deleteResult)
-	o.ServeJSON()
+	o.ResponseBuilder.SetData(deleteResult).ServeJSON()
 }
