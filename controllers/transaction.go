@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
+	"net/http"
 
+	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -19,7 +21,7 @@ func (o *TransactionController) Post() {
 	transaction.Owner = o.UserId
 	insertResult, err := o.Handler.Orms.Transaction.InsertOne(transaction)
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
@@ -31,15 +33,15 @@ func (o *TransactionController) Post() {
 func (o *TransactionController) Get() {
 	transactionId, err := primitive.ObjectIDFromHex(o.Ctx.Input.Param(":transactionId"))
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
 	transaction, err := o.Handler.Orms.Transaction.GetOneById(transactionId)
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 	} else if transaction.Owner != o.UserId {
-		o.ResponseBuilder.SetError(403, "not authorized to access").ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 	} else {
 		o.ResponseBuilder.SetData(transaction).ServeJSON()
 	}
@@ -50,7 +52,7 @@ func (o *TransactionController) Get() {
 func (o *TransactionController) GetAll() {
 	transactions, err := o.Handler.Orms.Transaction.GetManyByOwnerId(o.UserId)
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
@@ -64,13 +66,13 @@ func (o *TransactionController) Put() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
 	ownerIds, err := o.Handler.Orms.Transaction.GetOwnerIdsByIds(payload.Ids)
 	if len(ownerIds) != 1 || ownerIds[0] != o.UserId {
-		o.ResponseBuilder.SetError(403, "not authorized to access or missing resource").ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 
 		return
 	}
 	updateResult, err := o.Handler.Orms.Transaction.UpdateManyByIds(payload.Ids, &payload.Update)
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
@@ -84,13 +86,13 @@ func (o *TransactionController) Delete() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
 	ownerIds, err := o.Handler.Orms.Transaction.GetOwnerIdsByIds(payload.Ids)
 	if len(ownerIds) != 1 || ownerIds[0] != o.UserId {
-		o.ResponseBuilder.SetError(403, "not authorized to access or missing resource").ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 
 		return
 	}
 	deleteResult, err := o.Handler.Orms.Transaction.DeleteManyByIds(payload.Ids)
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"net/http"
 
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,13 +17,13 @@ type UserController struct {
 func (o *UserController) Get() {
 	userId, err := primitive.ObjectIDFromHex(o.Ctx.Input.Param(":userId"))
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
 	user, err := o.Handler.Orms.User.GetOneById(userId)
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
@@ -36,7 +37,7 @@ func (o *UserController) Put() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
 	updateResult, err := o.Handler.Orms.User.UpdateOneById(payload.Id, &payload.Update)
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
@@ -50,7 +51,7 @@ func (o *UserController) Delete() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
 	deleteResult, err := o.Handler.Orms.User.DeleteOneById(payload.Id)
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}

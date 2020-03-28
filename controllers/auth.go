@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/astaxie/beego/context"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -26,18 +28,18 @@ func (o *AuthController) Login() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &credential)
 	user, err := o.Handler.Orms.User.GetOneByEmailAndPassword(credential.Email, credential.Password)
 	if err == mongo.ErrNoDocuments {
-		o.ResponseBuilder.SetError(401, "incorrect username or password").ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, constants.ErrorIncorrectCredential).ServeJSON()
 
 		return
 	} else if err != nil {
-		o.ResponseBuilder.SetError(401, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, err.Error()).ServeJSON()
 
 		return
 	}
 
 	token, err := createJwtToken(user.Id)
 	if err != nil {
-		o.ResponseBuilder.SetError(401, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, err.Error()).ServeJSON()
 
 		return
 	}
@@ -51,7 +53,7 @@ func (o *AuthController) Register() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &user)
 	insertResult, err := o.Handler.Orms.User.InsertOne(user)
 	if err != nil {
-		o.ResponseBuilder.SetError(500, err.Error()).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
@@ -63,14 +65,14 @@ func AuthFilter(ctx *context.Context) {
 	ctx.Output.Header("Content-Type", "application/json")
 	tokenString, err := extractJwtToken(ctx)
 	if err != nil {
-		responseBuilder.SetError(401, err.Error())
+		responseBuilder.SetError(http.StatusUnauthorized, err.Error())
 
 		return
 	}
 
 	claims, err := validateJwtToken(tokenString)
 	if err != nil {
-		responseBuilder.SetError(401, err.Error())
+		responseBuilder.SetError(http.StatusUnauthorized, err.Error())
 
 		return
 	}
