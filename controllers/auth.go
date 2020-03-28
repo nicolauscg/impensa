@@ -49,7 +49,7 @@ func (o *AuthController) Login() {
 // @Title register user
 // @router /register [post]
 func (o *AuthController) Register() {
-	var user dt.UserInsert
+	var user dt.AuthRegister
 	json.Unmarshal(o.Ctx.Input.RequestBody, &user)
 	insertResult, err := o.Handler.Orms.User.InsertOne(user)
 	if err != nil {

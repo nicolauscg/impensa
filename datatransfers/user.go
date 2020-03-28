@@ -12,13 +12,13 @@ type User struct {
 	Password string             `json:"password" bson:"password"`
 }
 
-func (u *User) String() string {
-	return fmt.Sprintf("<User %v %v>", u.Id, u.Email)
+type UserItem struct {
+	Id    primitive.ObjectID `json:"id" bson:"_id"`
+	Email string             `json:"email" bson:"email"`
 }
 
-type UserInsert struct {
-	Email    string `bson:"email"`
-	Password string `bson:"password"`
+func (u *User) String() string {
+	return fmt.Sprintf("<User %v %v>", u.Id, u.Email)
 }
 
 type UserUpdate struct {

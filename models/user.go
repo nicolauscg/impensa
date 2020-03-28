@@ -10,8 +10,8 @@ import (
 )
 
 type UserOrmer interface {
-	InsertOne(insert dt.UserInsert) (*mongo.InsertOneResult, error)
-	GetOneById(id primitive.ObjectID) (*dt.User, error)
+	InsertOne(insert dt.AuthRegister) (*mongo.InsertOneResult, error)
+	GetOneById(id primitive.ObjectID) (*dt.UserItem, error)
 	GetOneByEmailAndPassword(email string, password string) (*dt.User, error)
 	UpdateOneById(id primitive.ObjectID, update *dt.UserUpdateFields) (*mongo.UpdateResult, error)
 	DeleteOneById(id primitive.ObjectID) (*mongo.DeleteResult, error)
@@ -25,11 +25,11 @@ func NewUserOrm(db *mongo.Database) *userOrm {
 	return &userOrm{userCollection: db.Collection("users")}
 }
 
-func (o *userOrm) InsertOne(insert dt.UserInsert) (*mongo.InsertOneResult, error) {
+func (o *userOrm) InsertOne(insert dt.AuthRegister) (*mongo.InsertOneResult, error) {
 	return o.userCollection.InsertOne(context.TODO(), insert)
 }
 
-func (o *userOrm) GetOneById(id primitive.ObjectID) (transaction *dt.User, err error) {
+func (o *userOrm) GetOneById(id primitive.ObjectID) (transaction *dt.UserItem, err error) {
 	err = o.userCollection.FindOne(context.TODO(), bson.D{{"_id", id}}).Decode(&transaction)
 	if err != nil {
 		return

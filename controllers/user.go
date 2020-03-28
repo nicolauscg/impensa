@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -35,6 +36,11 @@ func (o *UserController) Get() {
 func (o *UserController) Put() {
 	var payload dt.UserUpdate
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
+	if payload.Id != o.UserId {
+		o.ResponseBuilder.SetError(403, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
+
+		return
+	}
 	updateResult, err := o.Handler.Orms.User.UpdateOneById(payload.Id, &payload.Update)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
@@ -49,6 +55,11 @@ func (o *UserController) Put() {
 func (o *UserController) Delete() {
 	var payload dt.UserDelete
 	json.Unmarshal(o.Ctx.Input.RequestBody, &payload)
+	if payload.Id != o.UserId {
+		o.ResponseBuilder.SetError(403, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
+
+		return
+	}
 	deleteResult, err := o.Handler.Orms.User.DeleteOneById(payload.Id)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
