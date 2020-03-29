@@ -59,7 +59,6 @@ func (o *AuthController) Register(newUser dt.AuthRegister) {
 
 func AuthFilter(ctx *context.Context) {
 	responseBuilder := dt.NewResponseBuilder(ctx.ResponseWriter)
-	ctx.Output.Header("Content-Type", "application/json")
 	tokenString, err := extractJwtToken(ctx)
 	if err != nil {
 		responseBuilder.SetError(http.StatusUnauthorized, err.Error()).ServeJSON()

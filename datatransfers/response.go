@@ -30,7 +30,7 @@ type apiResponse struct {
 type apiResponseError struct {
 	Code     int                          `json:"code"`
 	Message  string                       `json:"message"`
-	CallInfo *callInfo                    `json:"callInfo"`
+	CallInfo *callInfo                    `json:"callInfo,omitempty"`
 	Errors   []apiResponseAdditionalError `json:"errors"`
 }
 
@@ -49,7 +49,7 @@ type callInfo struct {
 
 func NewResponseBuilder(responseContext *context.Response) *responseBuild {
 	r := &responseBuild{responseContext, apiResponse{}}
-	r.responseContext.ResponseWriter.Header().Add("Content-Type", "application/json")
+	r.responseContext.Header().Set("Content-Type", "application/json")
 
 	return r
 }
@@ -61,7 +61,7 @@ func (r *responseBuild) SetData(data interface{}) *responseBuild {
 }
 
 func (r *responseBuild) SetError(code int, message string) *responseBuild {
-	r.responseContext.ResponseWriter.WriteHeader(code)
+	r.responseContext.WriteHeader(code)
 	r.response.Error = NewErrorResponse(code, message)
 
 	return r
@@ -75,7 +75,7 @@ func (r *responseBuild) AddAdditionalError(domain string, reason string, message
 
 func (r *responseBuild) ServeJSON() {
 	responseBody, _ := json.Marshal(r.response)
-	r.responseContext.ResponseWriter.Write(responseBody)
+	r.responseContext.Write(responseBody)
 }
 
 func NewErrorResponse(code int, message string) *apiResponseError {
