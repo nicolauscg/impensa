@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 
+	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,7 +23,7 @@ type userOrm struct {
 }
 
 func NewUserOrm(db *mongo.Database) *userOrm {
-	return &userOrm{userCollection: db.Collection("users")}
+	return &userOrm{userCollection: db.Collection(constants.CollUsers)}
 }
 
 func (o *userOrm) InsertOne(insert dt.AuthRegister) (*mongo.InsertOneResult, error) {

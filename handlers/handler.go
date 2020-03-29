@@ -23,16 +23,16 @@ type Entity struct {
 	Transaction models.TransactionOrmer
 }
 
-func NewHandler(databaseName string) (handler *Handler, err error) {
+func NewHandler(databaseName string, connString string) (handler *Handler, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connString))
 	if err != nil {
 		err = errors.New(fmt.Sprintf("[handler/handler] mongo.Connect error. %+v", err))
 		return
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	// check if MongoDB server found
 	err = client.Ping(ctx, readpref.Primary())

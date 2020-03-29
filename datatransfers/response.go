@@ -81,7 +81,7 @@ func (r *responseBuild) ServeJSON() {
 func NewErrorResponse(code int, message string) *apiResponseError {
 	response := &apiResponseError{code, message, nil, make([]apiResponseAdditionalError, 0)}
 
-	if beego.AppConfig.String("runmode") == "dev" {
+	if beego.BConfig.RunMode == "dev" {
 		response.CallInfo = retrieveCallInfo()
 	}
 

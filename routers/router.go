@@ -1,21 +1,33 @@
 package routers
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
+	"github.com/nicolauscg/impensa/constants"
 	"github.com/nicolauscg/impensa/controllers"
 	handlerPkg "github.com/nicolauscg/impensa/handlers"
 )
 
 func init() {
-	handler, err := handlerPkg.NewHandler("test")
+	if runmode := os.Getenv(constants.EnvRunMode); runmode == "prod" {
+		beego.BConfig.RunMode = "prod"
+	} else {
+		beego.BConfig.RunMode = "dev"
+	}
+
+	beego.Info(fmt.Sprintf("router init: runmode %v", beego.BConfig.RunMode))
+
+	handler, err := handlerPkg.NewHandler(os.Getenv(constants.EnvDBName), os.Getenv(constants.EnvMgoConnString))
 	if err != nil {
 		panic(err)
 	}
 
 	allowedOrigins := make([]string, 0)
 	if beego.BConfig.RunMode == "dev" {
-		allowedOrigins = append(allowedOrigins, "http://localhost:3000")
+		allowedOrigins = append(allowedOrigins, os.Getenv(constants.EnvFrontendUrl))
 	}
 
 	ns := beego.NewNamespace("v1",

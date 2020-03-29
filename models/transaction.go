@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 
+	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -23,7 +24,7 @@ type transactionOrm struct {
 }
 
 func NewTransactionOrm(db *mongo.Database) *transactionOrm {
-	return &transactionOrm{transactionCollection: db.Collection("transactions")}
+	return &transactionOrm{transactionCollection: db.Collection(constants.CollTransactions)}
 }
 
 func (o *transactionOrm) InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error) {
