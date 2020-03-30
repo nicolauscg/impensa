@@ -25,10 +25,14 @@ func init() {
 	} else if _, errDev := os.Stat(path.Join(projectDirPath, constants.EnvDevFileName)); os.IsNotExist(errProd) && errDev == nil {
 		godotenv.Load(constants.EnvDevFileName)
 		beego.Info(fmt.Sprintf("loaded env from %v", constants.EnvDevFileName))
-	} else if os.IsNotExist(errProd) {
+	} else if !os.IsNotExist(errProd) {
 		panic(errProd)
 	} else {
 		panic(errDev)
+	}
+	if _, errDevLocal := os.Stat(path.Join(projectDirPath, constants.EnvDevLocalFileName)); errDevLocal == nil {
+		godotenv.Overload(constants.EnvDevLocalFileName)
+		beego.Info(fmt.Sprintf("overwriting env from %v", constants.EnvDevLocalFileName))
 	}
 
 	if os.Getenv(constants.EnvRunMode) == "prod" {
