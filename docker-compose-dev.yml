@@ -1,0 +1,16 @@
+version: "3"
+services:
+  backend:
+    image: nicolausc/impensa-be:1.0
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - "8080:8080"
+  database:
+    image: mongo:4.2-bionic
+    volumes:
+      - 'mongodb-volume:/data/db'
+    restart: always
+volumes:
+  mongodb-volume:
