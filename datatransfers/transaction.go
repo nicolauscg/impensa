@@ -20,23 +20,23 @@ func (t *Transaction) String() string {
 }
 
 type TransactionInsert struct {
-	Owner       primitive.ObjectID `bson:"owner"`
-	Amount      float32            `bson:"amount"`
-	Description string             `bson:"description"`
-	DateTime    time.Time          `bson:"dateTime"`
+	Owner       primitive.ObjectID `json:"owner" bson:"owner"`
+	Amount      float32            `json:"amount" bson:"amount"`
+	Description string             `json:"description" bson:"description"`
+	DateTime    time.Time          `json:"dateTime" bson:"dateTime"`
 }
 
 type TransactionUpdate struct {
-	Ids    []primitive.ObjectID
-	Update TransactionUpdateFields
+	Ids    []primitive.ObjectID    `json:"ids" bson:"ids"`
+	Update TransactionUpdateFields `json:"update" bson:"update"`
 }
 
 type TransactionUpdateFields struct {
-	Amount      float32   `bson:"amount,omitempty"`
-	Description string    `bson:"description,omitempty"`
-	DateTime    time.Time `bson:"dateTime,omitempty"`
+	Amount      float32   `json:"amount,omitempty" bson:"amount,omitempty"`
+	Description string    `json:"description,omitempty" bson:"description,omitempty"`
+	DateTime    time.Time `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
 }
 
 type TransactionDelete struct {
-	Ids []primitive.ObjectID
+	Ids []primitive.ObjectID `json:"ids" bson:"ids"`
 }

@@ -22,14 +22,14 @@ func (u *User) String() string {
 }
 
 type UserUpdate struct {
-	Id     primitive.ObjectID
-	Update UserUpdateFields
+	Id     primitive.ObjectID `json:"id" bson:"_id"`
+	Update UserUpdateFields   `json:"update" bson:"update"`
 }
 
 type UserUpdateFields struct {
-	Password string `bson:"password,omitempty"`
+	Password string `json:"password,omitempty" bson:"password,omitempty"`
 }
 
 type UserDelete struct {
-	Id primitive.ObjectID
+	Id primitive.ObjectID `json:"id" bson:"_id"`
 }
