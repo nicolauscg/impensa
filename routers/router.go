@@ -21,10 +21,14 @@ func init() {
 	}
 	if _, errProd := os.Stat(path.Join(projectDirPath, constants.EnvProdFileName)); errProd == nil {
 		godotenv.Load(constants.EnvProdFileName)
+		beego.Info(fmt.Sprintf("loaded env from %v", constants.EnvProdFileName))
 	} else if _, errDev := os.Stat(path.Join(projectDirPath, constants.EnvDevFileName)); os.IsNotExist(errProd) && errDev == nil {
 		godotenv.Load(constants.EnvDevFileName)
+		beego.Info(fmt.Sprintf("loaded env from %v", constants.EnvDevFileName))
+	} else if os.IsNotExist(errProd) {
+		panic(errProd)
 	} else {
-		panic("failed to read env file")
+		panic(errDev)
 	}
 
 	if os.Getenv(constants.EnvRunMode) == "prod" {

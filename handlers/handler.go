@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -24,6 +25,8 @@ type Entity struct {
 }
 
 func NewHandler(databaseName string, connString string) (handler *Handler, err error) {
+	connStringNoCred := regexp.MustCompile(`://.*@`).ReplaceAllString(connString, `://<username>:<password>@`)
+	beego.Info(fmt.Sprintf("creating handler with DBName %v and ConnString %v", databaseName, connStringNoCred))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connString))
@@ -32,13 +35,20 @@ func NewHandler(databaseName string, connString string) (handler *Handler, err e
 		return
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	// check if MongoDB server found
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		err = errors.New(fmt.Sprintf("[handler/handler] mongo client ping error. %+v", err))
-		return
+	for waitInterval := 5; ; {
+		err = client.Ping(ctx, readpref.Primary())
+		if err != nil {
+			beego.Error(fmt.Sprintf("[handler/handler] mongo client ping error. %+v", err))
+			beego.Error(fmt.Sprintf("retrying in %v seconds..", waitInterval))
+			time.Sleep(time.Duration(waitInterval) * time.Second)
+			waitInterval += waitInterval / 2
+		} else {
+			beego.Info("ping success")
+			break
+		}
 	}
 
 	handler = &Handler{db: client.Database(databaseName)}
