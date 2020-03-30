@@ -17,7 +17,7 @@ import { clearUserObject } from "./auth";
 const target = document.querySelector("#root");
 
 const axios = Axios.create({
-  baseURL: process.env.BACKENDURL
+  baseURL: process.env.REACT_APP_BACKENDURL
 });
 const cache = new LRU({ max: 10 });
 
