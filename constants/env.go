@@ -1,11 +1,10 @@
 package constants
 
 const (
-	EnvRunMode          = "RUNMODE"
 	EnvDBName           = "DBNAME"
 	EnvFrontendUrl      = "FRONTENDURL"
 	EnvMgoConnString    = "MGOCONNSTRING"
-	EnvProdFileName     = ".env.production"
-	EnvDevFileName      = ".env.development"
+	EnvApiSecret        = "API_SECRET"
+	EnvProdFileName     = ".env"
 	EnvDevLocalFileName = ".env.development.local"
 )

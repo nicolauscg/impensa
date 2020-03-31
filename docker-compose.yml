@@ -1,0 +1,17 @@
+version: "3.1"
+services:
+  backend:
+    image: nicolausc/impensa-be:1.0
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_ENV=PROD
+    secrets:
+      - IMPENSA_BE_API_SECRET
+      - IMPENSA_BE_MGOCONNSTRING
+secrets:
+  IMPENSA_BE_API_SECRET:
+    file: impensa_be_api_secret.txt
+  IMPENSA_BE_MGOCONNSTRING:
+    file: impensa_be_mgoconnstring.txt

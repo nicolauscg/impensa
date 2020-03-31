@@ -8,6 +8,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
+	secrets "github.com/ijustfool/docker-secrets"
 	"github.com/joho/godotenv"
 	"github.com/nicolauscg/impensa/constants"
 	"github.com/nicolauscg/impensa/controllers"
@@ -19,37 +20,37 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	if _, errProd := os.Stat(path.Join(projectDirPath, constants.EnvProdFileName)); errProd == nil {
-		godotenv.Load(constants.EnvProdFileName)
-		beego.Info(fmt.Sprintf("loaded env from %v", constants.EnvProdFileName))
-	} else if _, errDev := os.Stat(path.Join(projectDirPath, constants.EnvDevFileName)); os.IsNotExist(errProd) && errDev == nil {
-		godotenv.Load(constants.EnvDevFileName)
-		beego.Info(fmt.Sprintf("loaded env from %v", constants.EnvDevFileName))
-	} else if !os.IsNotExist(errProd) {
-		panic(errProd)
-	} else {
-		panic(errDev)
-	}
-	if _, errDevLocal := os.Stat(path.Join(projectDirPath, constants.EnvDevLocalFileName)); errDevLocal == nil {
-		godotenv.Overload(constants.EnvDevLocalFileName)
-		beego.Info(fmt.Sprintf("overwriting env from %v", constants.EnvDevLocalFileName))
-	}
 
-	if os.Getenv(constants.EnvRunMode) == "prod" {
+	var mgoConnString string
+	if os.Getenv("APP_ENV") == "PROD" {
+		beego.Info(fmt.Sprintf("load production environment"))
+		if _, err := os.Stat(path.Join(projectDirPath, constants.EnvProdFileName)); err != nil {
+			panic(err)
+		}
+		godotenv.Overload(constants.EnvProdFileName)
+		dockerSecrets, err := secrets.NewDockerSecrets("")
+		if err != nil {
+			panic(err)
+		}
 		beego.BConfig.RunMode = "prod"
+		mgoConnString, _ = dockerSecrets.Get("IMPENSA_BE_MGOCONNSTRING")
+		apiSecret, _ := dockerSecrets.Get("IMPENSA_BE_API_SECRET")
+		os.Setenv(constants.EnvApiSecret, apiSecret)
 	} else {
+		beego.Info(fmt.Sprintf("load development environment"))
+		if _, err := os.Stat(path.Join(projectDirPath, constants.EnvDevLocalFileName)); err != nil {
+			panic(err)
+		}
+		godotenv.Overload(constants.EnvDevLocalFileName)
 		beego.BConfig.RunMode = "dev"
+		mgoConnString = os.Getenv(constants.EnvMgoConnString)
 	}
-	beego.Info(fmt.Sprintf("Running beego in %v mode", beego.BConfig.RunMode))
+	dbName := os.Getenv(constants.EnvDBName)
+	allowedOrigins := []string{os.Getenv(constants.EnvFrontendUrl)}
 
-	handler, err := handlerPkg.NewHandler(os.Getenv(constants.EnvDBName), os.Getenv(constants.EnvMgoConnString))
+	handler, err := handlerPkg.NewHandler(dbName, mgoConnString)
 	if err != nil {
 		panic(err)
-	}
-
-	allowedOrigins := make([]string, 0)
-	if beego.BConfig.RunMode == "dev" {
-		allowedOrigins = append(allowedOrigins, os.Getenv(constants.EnvFrontendUrl))
 	}
 
 	ns := beego.NewNamespace("v1",

@@ -1,7 +1,7 @@
 frontend
 impensa
 lastupdate.tmp
-.env
+.env*.local
 
 # Common
 README.md

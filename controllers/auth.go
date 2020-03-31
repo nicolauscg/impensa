@@ -80,10 +80,10 @@ func createJwtToken(userId primitive.ObjectID) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["userId"] = userId
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() //Token expires after 1 hour
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString([]byte(os.Getenv("API_SECRET")))
+	return token.SignedString([]byte(os.Getenv(constants.EnvApiSecret)))
 }
 
 func extractJwtToken(ctx *context.Context) (string, error) {
@@ -100,7 +100,7 @@ func validateJwtToken(tokenString string) (claims jwt.MapClaims, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("API_SECRET")), nil
+		return []byte(os.Getenv(constants.EnvApiSecret)), nil
 	})
 	if err != nil {
 		return
