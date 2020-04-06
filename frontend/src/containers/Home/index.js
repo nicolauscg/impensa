@@ -1,5 +1,6 @@
 import React from "react";
 import useAxios from "axios-hooks";
+import { urlGetAllTransactions } from "../../api";
 
 const Home = () => {
   const [
@@ -8,7 +9,7 @@ const Home = () => {
       loading: transactionLoading,
       error: transactionError
     }
-  ] = useAxios("/v1/transaction");
+  ] = useAxios(urlGetAllTransactions());
 
   return (
     <>

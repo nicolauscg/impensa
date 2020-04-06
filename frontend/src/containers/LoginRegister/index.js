@@ -2,6 +2,7 @@ import React from "react";
 import { useFormik } from "formik";
 import useAxios from "axios-hooks";
 import { isLoggedIn } from "../../auth";
+import { urlLogin } from "../../api";
 
 const LoginRegister = ({ history }) => {
   if (isLoggedIn()) {
@@ -18,13 +19,7 @@ const LoginRegister = ({ history }) => {
 };
 
 const LoginForm = ({ history }) => {
-  const [{ error }, executepost] = useAxios(
-    {
-      url: "v1/auth/login",
-      method: "POST"
-    },
-    { manual: true }
-  );
+  const [{ error }, executepost] = useAxios(urlLogin(), { manual: true });
 
   const formik = useFormik({
     initialValues: {
@@ -43,7 +38,7 @@ const LoginForm = ({ history }) => {
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      {error && <p>{error.response.data.error.message}</p>}
+      {error && <p>{error}</p>}
       <label htmlFor="email">Email Address</label>
       <input
         id="email"
