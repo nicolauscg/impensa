@@ -10,6 +10,25 @@ services:
     secrets:
       - IMPENSA_BE_API_SECRET
       - IMPENSA_BE_MGOCONNSTRING
+    volumes:
+      - ./.env:/app/.env
+
+  frontend:
+    image: nicolausc/impensa-fe:1.0
+    restart: always
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/.env:/var/www/.env
+  
+  nginx:
+    image: nginx:1.17-alpine
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx-conf:/etc/nginx/conf.d
+
 secrets:
   IMPENSA_BE_API_SECRET:
     file: impensa_be_api_secret.txt
