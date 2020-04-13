@@ -1,0 +1,64 @@
+stages:
+  - deploy
+
+deploy frontend dev:
+  image: docker:19.03.0
+  stage: deploy
+  tags:
+    - docker
+  services:
+    - name: docker:19.03.0-dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - . scripts/init_deploy.sh
+    - . scripts/init_frontend.sh
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/impensa-fe-dev:latest || true
+    - docker build
+        --cache-from $CI_REGISTRY_IMAGE/impensa-fe-dev:latest 
+        --tag $CI_REGISTRY_IMAGE/impensa-fe-dev ./frontend
+    - docker push $CI_REGISTRY_IMAGE/impensa-fe-dev:latest
+    - ssh $HOST '. restart_service.sh'
+  only:
+    refs:
+      - dev
+    change:
+      - frontend/**/*
+      - scripts/**/*
+      - .gitlab-ci.yml
+      - docker-compose.yml
+
+deploy backend dev:
+  image: docker:19.03.0
+  stage: deploy
+  tags:
+    - docker
+  services:
+    - name: docker:19.03.0-dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - . scripts/init_deploy.sh
+    - . scripts/init_backend.sh
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/impensa-be-dev:latest || true
+    - docker build
+        --cache-from $CI_REGISTRY_IMAGE/impensa-be-dev:latest 
+        --tag $CI_REGISTRY_IMAGE/impensa-be-dev .
+    - docker push $CI_REGISTRY_IMAGE/impensa-be-dev:latest
+    - ssh $HOST '. restart_service.sh'
+  only:
+    refs:
+      - dev
+  except:
+    changes:
+      - frontend/**/*
