@@ -1,0 +1,15 @@
+frontend
+impensa
+lastupdate.tmp
+.env*.local
+
+# Common
+README.md
+CHANGELOG.md
+docker-compose.yml
+Dockerfile
+
+# git
+.git
+.gitattributes
+.gitignore
