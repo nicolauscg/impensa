@@ -27,7 +27,7 @@ deploy frontend dev:
   only:
     refs:
       - dev
-    change:
+    changes:
       - frontend/**/*
       - scripts/**/*
       - .gitlab-ci.yml
