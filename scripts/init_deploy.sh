@@ -7,7 +7,7 @@ mkdir -p ~/.ssh
 chmod 700 ~/.ssh
 [[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
-scp -v ./docker-compose.yml ./scripts/restart_service.sh $HOST:~/
-scp -v -r ./nginx-conf $HOST:~/
+scp ./docker-compose.yml ./scripts/restart_service.sh $HOST:~/
+scp -r ./nginx-conf $HOST:~/
 
 echo "init_deploy.sh finished"
