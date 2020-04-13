@@ -24,14 +24,10 @@ deploy frontend dev:
         --tag $CI_REGISTRY_IMAGE/impensa-fe-dev ./frontend
     - docker push $CI_REGISTRY_IMAGE/impensa-fe-dev:latest
     - ssh $HOST '. restart_service.sh'
+  when: manual
   only:
     refs:
       - dev
-    changes:
-      - frontend/**/*
-      - scripts/**/*
-      - .gitlab-ci.yml
-      - docker-compose.yml
 
 deploy backend dev:
   image: docker:19.03.0
@@ -56,9 +52,7 @@ deploy backend dev:
         --tag $CI_REGISTRY_IMAGE/impensa-be-dev .
     - docker push $CI_REGISTRY_IMAGE/impensa-be-dev:latest
     - ssh $HOST '. restart_service.sh'
+  when: manual
   only:
     refs:
       - dev
-  except:
-    changes:
-      - frontend/**/*
