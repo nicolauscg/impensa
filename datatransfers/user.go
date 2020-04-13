@@ -8,13 +8,17 @@ import (
 
 type User struct {
 	Id       primitive.ObjectID `json:"id" bson:"_id"`
+	Username string             `json:"username" bson:"username"`
 	Email    string             `json:"email" bson:"email"`
 	Password string             `json:"password" bson:"password"`
+	Picture  string             `json:"picture" bson:"picture"`
 }
 
 type UserItem struct {
-	Id    primitive.ObjectID `json:"id" bson:"_id"`
-	Email string             `json:"email" bson:"email"`
+	Id       primitive.ObjectID `json:"id" bson:"_id"`
+	Username string             `json:"username" bson:"username"`
+	Email    string             `json:"email" bson:"email"`
+	Picture  string             `json:"picture" bson:"picture"`
 }
 
 func (u *User) String() string {
@@ -27,7 +31,10 @@ type UserUpdate struct {
 }
 
 type UserUpdateFields struct {
+	Username string `json:"username,omitempty" bson:"username,omitempty"`
+	Email    string `json:"email,omitempty" bson:"email,omitempty"`
 	Password string `json:"password,omitempty" bson:"password,omitempty"`
+	Picture  string `json:"picture,omitempty" bson:"picture,omitempty"`
 }
 
 type UserDelete struct {
