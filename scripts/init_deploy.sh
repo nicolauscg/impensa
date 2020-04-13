@@ -10,4 +10,6 @@ chmod 700 ~/.ssh
 scp ./docker-compose.yml ./scripts/restart_service.sh $HOST:~/
 scp -r ./nginx-conf $HOST:~/
 
+echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
+
 echo "init_deploy.sh finished"
