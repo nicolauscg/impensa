@@ -20,10 +20,10 @@ func (t *Transaction) String() string {
 }
 
 type TransactionInsert struct {
-	Owner       primitive.ObjectID `json:"owner" bson:"owner"`
-	Amount      float32            `json:"amount" bson:"amount"`
-	Description string             `json:"description" bson:"description"`
-	DateTime    time.Time          `json:"dateTime" bson:"dateTime"`
+	Owner       primitive.ObjectID `json:"owner,omitempty" bson:"owner,omitempty"`
+	Amount      float32            `json:"amount,omitempty" bson:"amount,omitempty"`
+	Description string             `json:"description,omitempty" bson:"description,omitempty"`
+	DateTime    time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
 }
 
 type TransactionUpdate struct {

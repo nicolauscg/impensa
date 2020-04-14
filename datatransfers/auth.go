@@ -8,8 +8,9 @@ type AuthLogin struct {
 }
 
 type AuthRegister struct {
-	Email    string `json:"email" bson:"email"`
-	Password string `json:"password" bson:"password"`
+	Username string `json:"username,omitempty" bson:"username,omitempty"`
+	Email    string `json:"email,omitempty" bson:"email,omitempty"`
+	Password string `json:"password,omitempty" bson:"password,omitempty"`
 }
 
 type AuthPayload struct {
