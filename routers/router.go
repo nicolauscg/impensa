@@ -78,6 +78,12 @@ func init() {
 				&controllers.UserController{controllers.BaseController{Handler: handler}},
 			),
 		),
+		beego.NSNamespace("/account",
+			beego.NSBefore(controllers.AuthFilter),
+			beego.NSInclude(
+				&controllers.AccountController{controllers.BaseController{Handler: handler}},
+			),
+		),
 	)
 
 	beego.AddNamespace(ns)
