@@ -10,9 +10,12 @@ import (
 type Transaction struct {
 	Id          primitive.ObjectID `json:"id" bson:"_id"`
 	User        primitive.ObjectID `json:"user" bson:"user"`
+	Account     primitive.ObjectID `json:"account" bson:"account"`
+	Category    primitive.ObjectID `json:"category" bson:"category"`
 	Amount      float32            `json:"amount" bson:"amount"`
 	Description string             `json:"description" bson:"description"`
 	DateTime    time.Time          `json:"dateTime" bson:"dateTime"`
+	Picture     string             `json:"picture" bson:"picture"`
 }
 
 func (t *Transaction) String() string {
@@ -21,9 +24,12 @@ func (t *Transaction) String() string {
 
 type TransactionInsert struct {
 	User        primitive.ObjectID `json:"user,omitempty" bson:"user,omitempty"`
+	Account     primitive.ObjectID `json:"account,omitempty" bson:"account,omitempty"`
+	Category    primitive.ObjectID `json:"category,omitempty" bson:"category,omitempty"`
 	Amount      float32            `json:"amount,omitempty" bson:"amount,omitempty"`
 	Description string             `json:"description,omitempty" bson:"description,omitempty"`
 	DateTime    time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
+	Picture     string             `json:"picture,omitempty" bson:"picture,omitempty"`
 }
 
 type TransactionUpdate struct {
@@ -32,9 +38,12 @@ type TransactionUpdate struct {
 }
 
 type TransactionUpdateFields struct {
-	Amount      float32   `json:"amount,omitempty" bson:"amount,omitempty"`
-	Description string    `json:"description,omitempty" bson:"description,omitempty"`
-	DateTime    time.Time `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
+	Account     primitive.ObjectID `json:"account,omitempty" bson:"account,omitempty"`
+	Category    primitive.ObjectID `json:"category,omitempty" bson:"category,omitempty"`
+	Amount      float32            `json:"amount,omitempty" bson:"amount,omitempty"`
+	Description string             `json:"description,omitempty" bson:"description,omitempty"`
+	DateTime    time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
+	Picture     string             `json:"picture,omitempty" bson:"picture,omitempty"`
 }
 
 type TransactionDelete struct {
