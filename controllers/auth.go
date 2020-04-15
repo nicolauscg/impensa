@@ -41,20 +41,20 @@ func (o *AuthController) Login(credential dt.AuthLogin) {
 
 		return
 	}
-	o.ResponseBuilder.SetData(dt.AuthPayload{user.Id, user.Email, token}).ServeJSON()
+	o.ResponseBuilder.SetData(dt.AuthPayload{user.Id, user.Username, token}).ServeJSON()
 }
 
 // @Title register user
 // @Param newUser  body  dt.AuthRegister true  "newUser"
 // @router /register [post]
 func (o *AuthController) Register(newUser dt.AuthRegister) {
-	insertResult, err := o.Handler.Orms.User.InsertOne(newUser)
+	_, err := o.Handler.Orms.User.InsertOne(newUser)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
-	o.ResponseBuilder.SetData(insertResult).ServeJSON()
+	o.Login(dt.AuthLogin{newUser.Email, newUser.Password})
 }
 
 func AuthFilter(ctx *context.Context) {
