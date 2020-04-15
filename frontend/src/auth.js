@@ -1,7 +1,7 @@
 export const isLoggedIn = () => {
   try {
     const userDataObj = JSON.parse(localStorage.impensa);
-    if (userDataObj.id && userDataObj.email && userDataObj.token) {
+    if (userDataObj.id && userDataObj.username && userDataObj.token) {
       return true;
     }
   } catch (err) {

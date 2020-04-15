@@ -9,7 +9,6 @@ import Axios from "axios";
 
 import "./index.css";
 import "normalize.css";
-
 import App from "./containers/App";
 import * as serviceWorker from "./serviceWorker";
 import { clearUserObject } from "./auth";
@@ -18,7 +17,6 @@ const target = document.querySelector("#root");
 
 const axios = Axios.create();
 const cache = new LRU({ max: 10 });
-
 axios.interceptors.request.use(
   config => {
     try {
@@ -48,7 +46,6 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 configure({
   axios,
   cache
