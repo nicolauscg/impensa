@@ -31,12 +31,12 @@ func (o *accountOrm) InsertOne(insert dt.AccountInsert) (*mongo.InsertOneResult,
 	return o.accountCollection.InsertOne(context.TODO(), insert)
 }
 
-func (o *accountOrm) GetManyByUserId(userId primitive.ObjectID) (Accounts []*dt.Account, err error) {
+func (o *accountOrm) GetManyByUserId(userId primitive.ObjectID) (accounts []*dt.Account, err error) {
 	cur, err := o.accountCollection.Find(context.TODO(), bson.D{{"user", userId}})
 	if err != nil {
 		return
 	}
-	err = cur.All(context.TODO(), &Accounts)
+	err = cur.All(context.TODO(), &accounts)
 	if err != nil {
 		return
 	}
@@ -66,8 +66,8 @@ func (o *accountOrm) GetUserIdsByIds(ids []primitive.ObjectID) (userIds []primit
 	return
 }
 
-func (o *accountOrm) GetOneById(id primitive.ObjectID) (Account *dt.Account, err error) {
-	err = o.accountCollection.FindOne(context.TODO(), bson.D{{"_id", id}}).Decode(&Account)
+func (o *accountOrm) GetOneById(id primitive.ObjectID) (account *dt.Account, err error) {
+	err = o.accountCollection.FindOne(context.TODO(), bson.D{{"_id", id}}).Decode(&account)
 	if err != nil {
 		return
 	}
