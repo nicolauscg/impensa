@@ -12,8 +12,8 @@ import (
 
 type TransactionOrmer interface {
 	InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error)
-	GetManyByOwnerId(ownerId primitive.ObjectID) ([]*dt.Transaction, error)
-	GetOwnerIdsByIds(ids []primitive.ObjectID) ([]primitive.ObjectID, error)
+	GetManyByUserId(userId primitive.ObjectID) ([]*dt.Transaction, error)
+	GetUserIdsByIds(ids []primitive.ObjectID) ([]primitive.ObjectID, error)
 	GetOneById(id primitive.ObjectID) (*dt.Transaction, error)
 	UpdateManyByIds(ids []primitive.ObjectID, update *dt.TransactionUpdateFields) (*mongo.UpdateResult, error)
 	DeleteManyByIds(ids []primitive.ObjectID) (*mongo.DeleteResult, error)
@@ -31,8 +31,8 @@ func (o *transactionOrm) InsertOne(insert dt.TransactionInsert) (*mongo.InsertOn
 	return o.transactionCollection.InsertOne(context.TODO(), insert)
 }
 
-func (o *transactionOrm) GetManyByOwnerId(ownerId primitive.ObjectID) (transactions []*dt.Transaction, err error) {
-	cur, err := o.transactionCollection.Find(context.TODO(), bson.D{{"owner", ownerId}})
+func (o *transactionOrm) GetManyByUserId(userId primitive.ObjectID) (transactions []*dt.Transaction, err error) {
+	cur, err := o.transactionCollection.Find(context.TODO(), bson.D{{"user", userId}})
 	if err != nil {
 		return
 	}
@@ -44,13 +44,13 @@ func (o *transactionOrm) GetManyByOwnerId(ownerId primitive.ObjectID) (transacti
 	return
 }
 
-func (o *transactionOrm) GetOwnerIdsByIds(ids []primitive.ObjectID) (ownerIds []primitive.ObjectID, err error) {
+func (o *transactionOrm) GetUserIdsByIds(ids []primitive.ObjectID) (userIds []primitive.ObjectID, err error) {
 	var aggregateResult []map[string]primitive.ObjectID
-	ownerIds = make([]primitive.ObjectID, 0)
+	userIds = make([]primitive.ObjectID, 0)
 	cur, err := o.transactionCollection.Aggregate(context.TODO(), bson.A{
 		bson.D{{"$match", bson.D{{"_id", bson.D{{"$in", ids}}}}}},
 		bson.D{{"$group", bson.D{
-			{"_id", "$owner"},
+			{"_id", "$user"},
 		}}},
 	})
 	if err != nil {
@@ -61,7 +61,7 @@ func (o *transactionOrm) GetOwnerIdsByIds(ids []primitive.ObjectID) (ownerIds []
 		return
 	}
 	for _, elem := range aggregateResult {
-		ownerIds = append(ownerIds, elem["_id"])
+		userIds = append(userIds, elem["_id"])
 	}
 	return
 }

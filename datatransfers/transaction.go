@@ -9,7 +9,7 @@ import (
 
 type Transaction struct {
 	Id          primitive.ObjectID `json:"id" bson:"_id"`
-	Owner       primitive.ObjectID `json:"owner" bson:"owner"`
+	User        primitive.ObjectID `json:"user" bson:"user"`
 	Amount      float32            `json:"amount" bson:"amount"`
 	Description string             `json:"description" bson:"description"`
 	DateTime    time.Time          `json:"dateTime" bson:"dateTime"`
@@ -20,7 +20,7 @@ func (t *Transaction) String() string {
 }
 
 type TransactionInsert struct {
-	Owner       primitive.ObjectID `json:"owner,omitempty" bson:"owner,omitempty"`
+	User        primitive.ObjectID `json:"user,omitempty" bson:"user,omitempty"`
 	Amount      float32            `json:"amount,omitempty" bson:"amount,omitempty"`
 	Description string             `json:"description,omitempty" bson:"description,omitempty"`
 	DateTime    time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`

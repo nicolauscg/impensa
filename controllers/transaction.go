@@ -16,7 +16,7 @@ type TransactionController struct {
 // @Param newTransaction  body  dt.TransactionInsert true  "newTransaction"
 // @router / [post]
 func (o *TransactionController) CreateTransaction(newTransaction dt.TransactionInsert) {
-	newTransaction.Owner = o.UserId
+	newTransaction.User = o.UserId
 	insertResult, err := o.Handler.Orms.Transaction.InsertOne(newTransaction)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
@@ -39,7 +39,7 @@ func (o *TransactionController) GetTransaction(id string) {
 	transaction, err := o.Handler.Orms.Transaction.GetOneById(transactionId)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
-	} else if transaction.Owner != o.UserId {
+	} else if transaction.User != o.UserId {
 		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 	} else {
 		o.ResponseBuilder.SetData(transaction).ServeJSON()
@@ -49,7 +49,7 @@ func (o *TransactionController) GetTransaction(id string) {
 // @Title get all transactions
 // @router / [get]
 func (o *TransactionController) GetAllTransactions() {
-	transactions, err := o.Handler.Orms.Transaction.GetManyByOwnerId(o.UserId)
+	transactions, err := o.Handler.Orms.Transaction.GetManyByUserId(o.UserId)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
@@ -62,8 +62,8 @@ func (o *TransactionController) GetAllTransactions() {
 // @Param transactionUpdate  body  dt.TransactionUpdate true  "transactionUpdate"
 // @router / [put]
 func (o *TransactionController) UpdateTransactions(transactionUpdate dt.TransactionUpdate) {
-	ownerIds, err := o.Handler.Orms.Transaction.GetOwnerIdsByIds(transactionUpdate.Ids)
-	if len(ownerIds) != 1 || ownerIds[0] != o.UserId {
+	userIds, err := o.Handler.Orms.Transaction.GetUserIdsByIds(transactionUpdate.Ids)
+	if len(userIds) != 1 || userIds[0] != o.UserId {
 		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 
 		return
@@ -81,8 +81,8 @@ func (o *TransactionController) UpdateTransactions(transactionUpdate dt.Transact
 // @Param transactionDelete  body  dt.TransactionDelete true  "transactionDelete"
 // @router / [delete]
 func (o *TransactionController) DeleteTransactions(transactionDelete dt.TransactionDelete) {
-	ownerIds, err := o.Handler.Orms.Transaction.GetOwnerIdsByIds(transactionDelete.Ids)
-	if len(ownerIds) != 1 || ownerIds[0] != o.UserId {
+	userIds, err := o.Handler.Orms.Transaction.GetUserIdsByIds(transactionDelete.Ids)
+	if len(userIds) != 1 || userIds[0] != o.UserId {
 		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 
 		return
