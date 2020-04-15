@@ -82,6 +82,59 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"],
+        beego.ControllerComments{
+            Method: "CreateCategory",
+            Router: `/`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(
+				param.New("newCategory", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"],
+        beego.ControllerComments{
+            Method: "GetAllCategories",
+            Router: `/`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"],
+        beego.ControllerComments{
+            Method: "UpdateCategories",
+            Router: `/`,
+            AllowHTTPMethods: []string{"put"},
+            MethodParams: param.Make(
+				param.New("categoryUpdate", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"],
+        beego.ControllerComments{
+            Method: "DeleteCategories",
+            Router: `/`,
+            AllowHTTPMethods: []string{"delete"},
+            MethodParams: param.Make(
+				param.New("categoryDelete", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"],
+        beego.ControllerComments{
+            Method: "GetCategory",
+            Router: `/:id`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("id", param.IsRequired, param.InPath),
+			),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
             Method: "CreateTransaction",

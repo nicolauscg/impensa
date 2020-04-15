@@ -23,6 +23,7 @@ type Entity struct {
 	User        models.UserOrmer
 	Transaction models.TransactionOrmer
 	Account     models.AccountOrmer
+	Category    models.CategoryOrmer
 }
 
 func NewHandler(databaseName string, connString string) (handler *Handler, err error) {
@@ -57,6 +58,7 @@ func NewHandler(databaseName string, connString string) (handler *Handler, err e
 		models.NewUserOrm(handler.db),
 		models.NewTransactionOrm(handler.db),
 		models.NewAccountOrm(handler.db),
+		models.NewCategoryOrm(handler.db),
 	}
 
 	if handler == nil {
