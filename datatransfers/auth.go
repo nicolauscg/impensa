@@ -14,7 +14,7 @@ type AuthRegister struct {
 }
 
 type AuthPayload struct {
-	Id    primitive.ObjectID `json:"id" bson:"_id"`
-	Email string             `json:"email" bson:"email"`
-	Token string             `json:"token" bson:"token"`
+	Id       primitive.ObjectID `json:"id" bson:"_id"`
+	Username string             `json:"username" bson:"username"`
+	Token    string             `json:"token" bson:"token"`
 }
