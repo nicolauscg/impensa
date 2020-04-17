@@ -13,6 +13,9 @@ import App from "./containers/App";
 import * as serviceWorker from "./serviceWorker";
 import { clearUserObject } from "./auth";
 
+import { MuiPickersUtilsProvider } from "@material-ui/pickers";
+import MomentUtils from "@date-io/moment";
+
 const target = document.querySelector("#root");
 
 const axios = Axios.create();
@@ -54,7 +57,9 @@ configure({
 render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <App />
+      <MuiPickersUtilsProvider utils={MomentUtils}>
+        <App />
+      </MuiPickersUtilsProvider>
     </ConnectedRouter>
   </Provider>,
   target
