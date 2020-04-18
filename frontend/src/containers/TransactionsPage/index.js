@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import { useFormik } from "formik";
+import * as R from "ramda";
+
+import { Button, Typography, Box } from "@material-ui/core";
+
 import {
   useAxiosSafely,
   urlGetAllTransactions,
@@ -7,31 +11,10 @@ import {
   urlGetAllAccounts,
   urlGetAllCategory
 } from "../../api";
-
-import { makeStyles } from "@material-ui/core/styles";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Typography,
-  Box
-} from "@material-ui/core";
 import NewTransactionModal from "../../components/CreateTransactionModal";
-
-const useStyles = makeStyles({
-  table: {
-    minWidth: 650
-  }
-});
+import DataTable, { DataTableFormatter } from "../../components/DataTable";
 
 const TransactionsPage = () => {
-  const classes = useStyles();
-
   const [newTransactionModelIsOpen, setNewTransactionModelIsOpen] = useState(
     false
   );
@@ -92,32 +75,25 @@ const TransactionsPage = () => {
         </Button>
       </Box>
       <NewTransactionModal {...newTransactionModelProps} />
-      <TableContainer component={Paper}>
-        <Table className={classes.table} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell align="right">Description</TableCell>
-              <TableCell align="right">Category</TableCell>
-              <TableCell align="right">Account</TableCell>
-              <TableCell align="right">Amount</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {transactionsData.map(row => (
-              <TableRow key={row.id}>
-                <TableCell component="th" scope="row">
-                  {row.dateTime}
-                </TableCell>
-                <TableCell align="right">{row.description}</TableCell>
-                <TableCell align="right">{row.category}</TableCell>
-                <TableCell align="right">{row.account}</TableCell>
-                <TableCell align="right">{row.amount}</TableCell>``
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <DataTable
+        headerNames={["Date", "Description", "Category", "Account", "Amount"]}
+        dataFormatters={[
+          DataTableFormatter.formatDateFrom(R.prop("dateTime")),
+          R.prop("description"),
+          DataTableFormatter.mapFromLookup(
+            R.prop("category"),
+            categoriesData,
+            R.prop("name")
+          ),
+          DataTableFormatter.mapFromLookup(
+            R.prop("account"),
+            accountsData,
+            R.prop("name")
+          ),
+          R.prop("amount")
+        ]}
+        data={transactionsData}
+      />
     </>
   );
 };
