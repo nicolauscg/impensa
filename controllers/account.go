@@ -39,7 +39,7 @@ func (o *AccountController) GetAccount(id string) {
 	account, err := o.Handler.Orms.Account.GetOneById(accountId)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
-	} else if account.User != o.UserId {
+	} else if *account.User != o.UserId {
 		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 	} else {
 		o.ResponseBuilder.SetData(account).ServeJSON()

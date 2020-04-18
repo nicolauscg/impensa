@@ -7,10 +7,10 @@ import (
 )
 
 type Account struct {
-	Id   primitive.ObjectID `json:"id" bson:"_id"`
-	Name string             `json:"name" bson:"name"`
-	Icon int                `json:"icon" bson:"icon"`
-	User primitive.ObjectID `json:"user" bson:"user"`
+	Id   *primitive.ObjectID `json:"id" bson:"_id"`
+	Name *string             `json:"name" bson:"name"`
+	Icon *int                `json:"icon" bson:"icon"`
+	User *primitive.ObjectID `json:"user" bson:"user"`
 }
 
 func (a *Account) String() string {

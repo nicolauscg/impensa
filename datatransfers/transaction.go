@@ -8,14 +8,14 @@ import (
 )
 
 type Transaction struct {
-	Id          primitive.ObjectID `json:"id" bson:"_id"`
-	User        primitive.ObjectID `json:"user" bson:"user"`
-	Account     primitive.ObjectID `json:"account" bson:"account"`
-	Category    primitive.ObjectID `json:"category" bson:"category"`
-	Amount      float32            `json:"amount" bson:"amount"`
-	Description string             `json:"description" bson:"description"`
-	DateTime    time.Time          `json:"dateTime" bson:"dateTime"`
-	Picture     string             `json:"picture" bson:"picture"`
+	Id          *primitive.ObjectID `json:"id" bson:"_id"`
+	User        *primitive.ObjectID `json:"user" bson:"user"`
+	Account     *primitive.ObjectID `json:"account" bson:"account"`
+	Category    *primitive.ObjectID `json:"category" bson:"category"`
+	Amount      *float32            `json:"amount" bson:"amount"`
+	Description *string             `json:"description" bson:"description"`
+	DateTime    *time.Time          `json:"dateTime" bson:"dateTime"`
+	Picture     *string             `json:"picture" bson:"picture"`
 }
 
 func (t *Transaction) String() string {

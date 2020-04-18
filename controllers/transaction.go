@@ -39,7 +39,7 @@ func (o *TransactionController) GetTransaction(id string) {
 	transaction, err := o.Handler.Orms.Transaction.GetOneById(transactionId)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
-	} else if transaction.User != o.UserId {
+	} else if *transaction.User != o.UserId {
 		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 	} else {
 		o.ResponseBuilder.SetData(transaction).ServeJSON()
