@@ -11,9 +11,11 @@ import {
   urlGetAllAccounts,
   urlGetAllCategory
 } from "../../api";
-import NewTransactionModal from "../../components/CreateTransactionModal";
 import DataTable, { DataTableFormatter } from "../../components/DataTable";
 import { cleanNilFromObject } from "../../ramdaHelpers";
+import CreateOrEditModal, {
+  FormFields
+} from "../../components/CreateOrEditModal";
 
 const TransactionsPage = () => {
   const [newTransactionModelIsOpen, setNewTransactionModelIsOpen] = useState(
@@ -57,13 +59,40 @@ const TransactionsPage = () => {
     }
   });
 
-  const newTransactionModelProps = {
+  const createOrEditTransactionModalProps = {
+    title: "New Transaction",
     loading,
     isOpen: newTransactionModelIsOpen,
     handleClose: handleCloseNewTransactionModal,
     formik: formikCreateTransaction,
-    accounts: accountsData,
-    categories: categoriesData
+    formFields: [
+      FormFields.textField({
+        label: "Amount",
+        type: "number",
+        name: "amount"
+      }),
+      FormFields.dateField({
+        label: "Date",
+        name: "dateTime"
+      }),
+      FormFields.textField({
+        label: "Description",
+        type: "text",
+        name: "description"
+      }),
+      FormFields.selectField({
+        label: "Category",
+        name: "category",
+        options: categoriesData,
+        optionDisplayer: R.prop("name")
+      }),
+      FormFields.selectField({
+        label: "Account",
+        name: "account",
+        options: accountsData,
+        optionDisplayer: R.prop("name")
+      })
+    ]
   };
 
   return (
@@ -81,7 +110,7 @@ const TransactionsPage = () => {
           Add transaction
         </Button>
       </Box>
-      <NewTransactionModal {...newTransactionModelProps} />
+      <CreateOrEditModal {...createOrEditTransactionModalProps} />
       <DataTable
         headerNames={["Date", "Description", "Category", "Account", "Amount"]}
         dataFormatters={[
