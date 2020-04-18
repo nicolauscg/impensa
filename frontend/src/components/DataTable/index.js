@@ -9,16 +9,24 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  Tooltip,
+  IconButton
 } from "@material-ui/core";
+import { Edit, Delete } from "@material-ui/icons";
 
-import { objFromListWith } from "../../ramdaCookbook";
+import { objFromListWith } from "../../ramdaHelpers";
 
 const moment = require("moment");
 
 const useStyles = makeStyles({
   table: {
-    minWidth: 650
+    minWidth: 650,
+    tableLayout: "auto"
+  },
+  tableCellFitContent: {
+    width: "1%",
+    whiteSpace: "nowrap"
   }
 });
 
@@ -47,7 +55,11 @@ export default function DataTable({ headerNames, dataFormatters, data }) {
 
   return (
     <TableContainer component={Paper}>
-      <Table className={classes.table} aria-label="simple table">
+      <Table
+        className={classes.table}
+        aria-label="simple table"
+        fixedHeader={false}
+      >
         <TableHead>
           <TableRow>
             {headerNames.map((headerName, i) => (
@@ -61,6 +73,18 @@ export default function DataTable({ headerNames, dataFormatters, data }) {
               {dataFormatters.map((dataFormatter, columnIndex) => (
                 <TableCell key={columnIndex}>{dataFormatter(row)}</TableCell>
               ))}
+              <TableCell className={classes.tableCellFitContent}>
+                <Tooltip title="Edit">
+                  <IconButton aria-label="edit">
+                    <Edit />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete">
+                  <IconButton aria-label="delete">
+                    <Delete />
+                  </IconButton>
+                </Tooltip>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

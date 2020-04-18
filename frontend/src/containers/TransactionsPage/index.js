@@ -13,6 +13,7 @@ import {
 } from "../../api";
 import NewTransactionModal from "../../components/CreateTransactionModal";
 import DataTable, { DataTableFormatter } from "../../components/DataTable";
+import { cleanNilFromObject } from "../../ramdaHelpers";
 
 const TransactionsPage = () => {
   const [newTransactionModelIsOpen, setNewTransactionModelIsOpen] = useState(
@@ -24,7 +25,8 @@ const TransactionsPage = () => {
     setNewTransactionModelIsOpen(false);
 
   const [
-    { data: transactionsData, loading: transactionsLoading }
+    { data: transactionsData, loading: transactionsLoading },
+    refetchTransactions
   ] = useAxiosSafely(urlGetAllTransactions());
   const [{ data: accountsData, loading: accountsLoading }] = useAxiosSafely(
     urlGetAllAccounts()
@@ -34,19 +36,24 @@ const TransactionsPage = () => {
   );
   const loading = transactionsLoading || accountsLoading || categoriesLoading;
 
+  const [, postCreateTransaction] = useAxiosSafely(urlPostCreateTransaction());
+
   const formikCreateTransaction = useFormik({
     initialValues: {
       amount: 0,
       description: "",
-      date: new Date(),
+      dateTime: new Date(),
       account: null,
       category: null,
       picture: null
     },
     onSubmit: values => {
-      urlPostCreateTransaction({
-        data: values
-      }).then(handleCloseNewTransactionModal);
+      postCreateTransaction({
+        data: cleanNilFromObject(values)
+      }).then(() => {
+        handleCloseNewTransactionModal();
+        refetchTransactions();
+      });
     }
   });
 

@@ -126,7 +126,7 @@ export default function NewTransactionModal({
           fullWidth={true}
           className="mt-5"
         >
-          Login
+          Create
         </Button>
       </form>
     </Box>
