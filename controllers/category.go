@@ -16,7 +16,7 @@ type CategoryController struct {
 // @Param newCategory  body  dt.CategoryInsert true  "newCategory"
 // @router / [post]
 func (o *CategoryController) CreateCategory(newCategory dt.CategoryInsert) {
-	newCategory.User = o.UserId
+	newCategory.User = &o.UserId
 	insertResult, err := o.Handler.Orms.Category.InsertOne(newCategory)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()

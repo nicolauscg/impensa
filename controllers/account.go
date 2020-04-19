@@ -16,7 +16,7 @@ type AccountController struct {
 // @Param newAccount  body  dt.AccountInsert true  "newAccount"
 // @router / [post]
 func (o *AccountController) CreateAccount(newAccount dt.AccountInsert) {
-	newAccount.User = o.UserId
+	newAccount.User = &o.UserId
 	insertResult, err := o.Handler.Orms.Account.InsertOne(newAccount)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()

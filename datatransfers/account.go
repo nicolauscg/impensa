@@ -18,10 +18,10 @@ func (a *Account) String() string {
 }
 
 type AccountInsert struct {
-	Id   primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Name string             `json:"name,omitempty" bson:"name,omitempty"`
-	Icon int                `json:"icon,omitempty" bson:"icon,omitempty"`
-	User primitive.ObjectID `json:"user,omitempty" bson:"user,omitempty"`
+	Id   *primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Name *string             `json:"name,omitempty" bson:"name,omitempty"`
+	Icon *int                `json:"icon,omitempty" bson:"icon,omitempty"`
+	User *primitive.ObjectID `json:"user,omitempty" bson:"user,omitempty"`
 }
 
 type AccountUpdate struct {
@@ -30,8 +30,8 @@ type AccountUpdate struct {
 }
 
 type AccountUpdateFields struct {
-	Name string `json:"name,omitempty" bson:"name,omitempty"`
-	Icon int    `json:"icon,omitempty" bson:"icon,omitempty"`
+	Name *string `json:"name,omitempty" bson:"name,omitempty"`
+	Icon *int    `json:"icon,omitempty" bson:"icon,omitempty"`
 }
 
 type AccountDelete struct {

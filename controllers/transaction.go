@@ -16,7 +16,7 @@ type TransactionController struct {
 // @Param newTransaction  body  dt.TransactionInsert true  "newTransaction"
 // @router / [post]
 func (o *TransactionController) CreateTransaction(newTransaction dt.TransactionInsert) {
-	newTransaction.User = o.UserId
+	newTransaction.User = &o.UserId
 	insertResult, err := o.Handler.Orms.Transaction.InsertOne(newTransaction)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
