@@ -55,9 +55,11 @@ func init() {
 
 	ns := beego.NewNamespace("v1",
 		beego.NSBefore(cors.Allow(&cors.Options{
-			AllowOrigins:     allowedOrigins,
-			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-			AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type"},
+			AllowOrigins: allowedOrigins,
+			AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowHeaders: []string{
+				"Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type",
+			},
 			ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin"},
 			AllowCredentials: true,
 		})),

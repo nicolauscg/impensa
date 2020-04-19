@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -41,6 +42,13 @@ func (o *AuthController) Login(credential dt.AuthLogin) {
 
 		return
 	}
+	authPayloadJson, _ := json.Marshal(dt.AuthPayload{user.Id, user.Username, token})
+	if credential.RememberMe {
+		oneWeek := 60 * 60 * 24 * 7
+		o.Ctx.SetCookie("impensa", string(authPayloadJson), 4 * oneWeek)
+	} else {
+		o.Ctx.SetCookie("impensa", string(authPayloadJson))
+	}
 	o.ResponseBuilder.SetData(dt.AuthPayload{user.Id, user.Username, token}).ServeJSON()
 }
 
@@ -54,7 +62,7 @@ func (o *AuthController) Register(newUser dt.AuthRegister) {
 
 		return
 	}
-	o.Login(dt.AuthLogin{newUser.Email, newUser.Password})
+	o.Login(dt.AuthLogin{newUser.Email, newUser.Password, false})
 }
 
 func AuthFilter(ctx *context.Context) {
@@ -80,7 +88,8 @@ func createJwtToken(userId primitive.ObjectID) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["userId"] = userId
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	oneWeek := time.Hour * 24 * 7
+	claims["exp"] = time.Now().Add(4 * oneWeek).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString([]byte(os.Getenv(constants.EnvApiSecret)))

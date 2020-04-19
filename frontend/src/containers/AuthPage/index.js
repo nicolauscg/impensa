@@ -19,7 +19,8 @@ const AuthPage = ({ history }) => {
     formikLogin: useFormik({
       initialValues: {
         email: "",
-        password: ""
+        password: "",
+        rememberMe: false
       },
       onSubmit: values => {
         postLogin({

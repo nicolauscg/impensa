@@ -3,8 +3,9 @@ package datatransfers
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type AuthLogin struct {
-	Email    string `json:"email" bson:"email"`
-	Password string `json:"password" bson:"password"`
+	Email      string `json:"email" bson:"email"`
+	Password   string `json:"password" bson:"password"`
+	RememberMe bool   `json:"rememberMe" bson:"rememberMe"`
 }
 
 type AuthRegister struct {

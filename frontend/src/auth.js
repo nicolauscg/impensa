@@ -1,7 +1,9 @@
+import cookie from "cookie";
+
 export const isLoggedIn = () => {
   try {
-    const userDataObj = JSON.parse(localStorage.impensa);
-    if (userDataObj.id && userDataObj.username && userDataObj.token) {
+    const userDataObj = parseAuthPayloadFromCookie();
+    if (payloadIsValid(userDataObj)) {
       return true;
     }
   } catch (err) {
@@ -14,12 +16,21 @@ export const isLoggedIn = () => {
 
 export const getUserObject = () => {
   if (isLoggedIn()) {
-    return JSON.parse(localStorage.impensa);
+    return parseAuthPayloadFromCookie();
   }
 
   return null;
 };
 
 export const clearUserObject = () => {
-  localStorage.removeItem("impensa");
+  delete_cookie("impensa");
 };
+
+const delete_cookie = name =>
+  (document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`);
+
+const parseAuthPayloadFromCookie = () =>
+  JSON.parse(cookie.parse(document.cookie).impensa);
+
+const payloadIsValid = payload =>
+  payload.id && payload.username && payload.token;

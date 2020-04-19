@@ -9,7 +9,9 @@ import {
   Typography,
   Tab,
   Tabs,
-  AppBar
+  AppBar,
+  FormControlLabel,
+  Checkbox
 } from "@material-ui/core";
 
 const TabPanel = props => {
@@ -95,6 +97,17 @@ const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
               onChange={formikLogin.handleChange}
               value={formikLogin.values.password}
               fullWidth={true}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formikLogin.values.rememberMe}
+                  onChange={formikLogin.handleChange}
+                  name="rememberMe"
+                  color="primary"
+                />
+              }
+              label="remember me"
             />
             <Button
               variant="contained"

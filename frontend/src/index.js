@@ -18,7 +18,7 @@ import MomentUtils from "@date-io/moment";
 
 const target = document.querySelector("#root");
 
-const axios = Axios.create();
+const axios = Axios.create({ withCredentials: true });
 const cache = new LRU({ max: 10 });
 axios.interceptors.request.use(
   config => {
