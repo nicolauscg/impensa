@@ -50,7 +50,13 @@ export const DataTableFormatter = {
     )
 };
 
-export default function DataTable({ headerNames, dataFormatters, data }) {
+export default function DataTable({
+  headerNames,
+  dataFormatters,
+  data,
+  onEdit,
+  onDelete
+}) {
   const classes = useStyles();
 
   return (
@@ -75,11 +81,11 @@ export default function DataTable({ headerNames, dataFormatters, data }) {
               ))}
               <TableCell className={classes.tableCellFitContent}>
                 <Tooltip title="Edit">
-                  <IconButton aria-label="edit">
+                  <IconButton aria-label="edit" onClick={() => onEdit(row)}>
                     <Edit />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Delete">
+                <Tooltip title="Delete" onClick={() => onDelete(row)}>
                   <IconButton aria-label="delete">
                     <Delete />
                   </IconButton>

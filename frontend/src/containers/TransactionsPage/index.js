@@ -7,24 +7,37 @@ import { Button, Typography, Box } from "@material-ui/core";
 import {
   useAxiosSafely,
   urlGetAllTransactions,
-  urlPostCreateTransaction,
+  urlCreateTransaction,
   urlGetAllAccounts,
-  urlGetAllCategory
+  urlGetAllCategory,
+  urlUpdateTransaction,
+  urlDeleteTransaction
 } from "../../api";
 import DataTable, { DataTableFormatter } from "../../components/DataTable";
-import { cleanNilFromObject } from "../../ramdaHelpers";
+import {
+  cleanNilFromObject,
+  transformValuesToUpdatePayload
+} from "../../ramdaHelpers";
 import CreateOrEditModal, {
-  FormFields
+  FormFields,
+  FormTypes
 } from "../../components/CreateOrEditModal";
 
 const TransactionsPage = () => {
+  const initialModalData = {
+    amount: 0,
+    description: "",
+    dateTime: new Date(),
+    account: null,
+    category: null,
+    picture: null
+  };
+
   const [newTransactionModelIsOpen, setNewTransactionModelIsOpen] = useState(
     false
   );
-  const handleOpenNewTransactionModal = () =>
-    setNewTransactionModelIsOpen(true);
-  const handleCloseNewTransactionModal = () =>
-    setNewTransactionModelIsOpen(false);
+  const [modalData, setModalData] = useState(initialModalData);
+  const [modalMode, setModalMode] = useState(FormTypes.CREATE);
 
   const [
     { data: transactionsData, loading: transactionsLoading },
@@ -36,35 +49,77 @@ const TransactionsPage = () => {
   const [{ data: categoriesData, loading: categoriesLoading }] = useAxiosSafely(
     urlGetAllCategory()
   );
-  const loading = transactionsLoading || accountsLoading || categoriesLoading;
+  const [, createTransaction] = useAxiosSafely(urlCreateTransaction());
+  const [, updateTransaction] = useAxiosSafely(urlUpdateTransaction());
+  const [, deleteTransaction] = useAxiosSafely(urlDeleteTransaction());
 
-  const [, postCreateTransaction] = useAxiosSafely(urlPostCreateTransaction());
-
-  const formikCreateTransaction = useFormik({
-    initialValues: {
-      amount: 0,
-      description: "",
-      dateTime: new Date(),
-      account: null,
-      category: null,
-      picture: null
-    },
+  const formikTrasaction = useFormik({
+    initialValues: modalData,
+    enableReinitialize: true,
     onSubmit: values => {
-      postCreateTransaction({
-        data: cleanNilFromObject(values)
-      }).then(() => {
-        handleCloseNewTransactionModal();
-        refetchTransactions();
-      });
+      const cleanedValues = R.evolve(
+        {
+          amount: R.ifElse(R.isEmpty, R.always(0), R.identity)
+        },
+        values
+      );
+      switch (modalMode) {
+        case FormTypes.CREATE:
+          createTransaction({
+            data: cleanNilFromObject(cleanedValues)
+          }).then(() => {
+            handleCloseNewTransactionModal();
+            refetchTransactions();
+          });
+          break;
+        case FormTypes.UPDATE:
+          updateTransaction({
+            data: R.pipe(
+              cleanNilFromObject,
+              transformValuesToUpdatePayload
+            )(cleanedValues)
+          }).then(() => {
+            handleCloseNewTransactionModal();
+            refetchTransactions();
+          });
+          break;
+        default:
+          throw new Error("unrecognized FormType in modalMode");
+      }
     }
   });
 
+  const resetModalData = () => setModalData(initialModalData);
+  const handleOpenNewTransactionModal = () =>
+    setNewTransactionModelIsOpen(true);
+  const handleCloseNewTransactionModal = () => {
+    setNewTransactionModelIsOpen(false);
+  };
+  const handleOnCreate = () => {
+    setModalMode(FormTypes.CREATE);
+    resetModalData();
+    handleOpenNewTransactionModal();
+  };
+  const handleOnEdit = data => {
+    setModalMode(FormTypes.UPDATE);
+    setModalData(data);
+    handleOpenNewTransactionModal();
+  };
+  const handleOnDelete = data => {
+    deleteTransaction({ data: { ids: Array.of(data.id) } }).then(() =>
+      refetchTransactions()
+    );
+  };
+
+  const loading = transactionsLoading || accountsLoading || categoriesLoading;
   const createOrEditTransactionModalProps = {
     title: "New Transaction",
+    data: modalData,
     loading,
     isOpen: newTransactionModelIsOpen,
     handleClose: handleCloseNewTransactionModal,
-    formik: formikCreateTransaction,
+    formik: formikTrasaction,
+    formType: modalMode,
     formFields: [
       FormFields.textField({
         label: "Amount",
@@ -94,6 +149,27 @@ const TransactionsPage = () => {
       })
     ]
   };
+  const transactionDataTableProps = {
+    headerNames: ["Date", "Description", "Category", "Account", "Amount"],
+    dataFormatters: [
+      DataTableFormatter.formatDateFrom(R.prop("dateTime")),
+      R.prop("description"),
+      DataTableFormatter.mapFromLookup(
+        R.prop("category"),
+        categoriesData,
+        R.prop("name")
+      ),
+      DataTableFormatter.mapFromLookup(
+        R.prop("account"),
+        accountsData,
+        R.prop("name")
+      ),
+      R.prop("amount")
+    ],
+    data: transactionsData,
+    onEdit: handleOnEdit,
+    onDelete: handleOnDelete
+  };
 
   return (
     <>
@@ -104,32 +180,14 @@ const TransactionsPage = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={handleOpenNewTransactionModal}
+          onClick={handleOnCreate}
           className="ml-3"
         >
           Add transaction
         </Button>
       </Box>
       <CreateOrEditModal {...createOrEditTransactionModalProps} />
-      <DataTable
-        headerNames={["Date", "Description", "Category", "Account", "Amount"]}
-        dataFormatters={[
-          DataTableFormatter.formatDateFrom(R.prop("dateTime")),
-          R.prop("description"),
-          DataTableFormatter.mapFromLookup(
-            R.prop("category"),
-            categoriesData,
-            R.prop("name")
-          ),
-          DataTableFormatter.mapFromLookup(
-            R.prop("account"),
-            accountsData,
-            R.prop("name")
-          ),
-          R.prop("amount")
-        ]}
-        data={transactionsData}
-      />
+      <DataTable {...transactionDataTableProps} />
     </>
   );
 };

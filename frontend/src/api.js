@@ -27,9 +27,21 @@ export const urlGetAllTransactions = () => ({
   type: RESPONSE_TYPE.ARRAY,
   manual: false
 });
-export const urlPostCreateTransaction = () => ({
+export const urlCreateTransaction = () => ({
   url: `${baseUrl}/transaction`,
   method: "POST",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlUpdateTransaction = () => ({
+  url: `${baseUrl}/transaction`,
+  method: "PUT",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlDeleteTransaction = () => ({
+  url: `${baseUrl}/transaction`,
+  method: "DELETE",
   type: RESPONSE_TYPE.OBJECT,
   manual: true
 });

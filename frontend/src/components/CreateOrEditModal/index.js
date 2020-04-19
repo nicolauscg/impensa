@@ -33,6 +33,11 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+export const FormTypes = {
+  CREATE: 0,
+  UPDATE: 1
+};
+
 export const FormFields = {
   textField: ({ label, type, name, textFieldProps = {} }) => formik => (
     <TextField
@@ -58,9 +63,7 @@ export const FormFields = {
       name={name}
       fullWidth={true}
       onChange={event => {
-        const newValues = {};
-        newValues[name] = event.toISOString();
-        formik.setValues(newValues);
+        formik.setFieldValue(name, event.toISOString());
       }}
       value={formik.values[name]}
       KeyboardButtonProps={{
@@ -115,7 +118,8 @@ export default function CreateOrEditModal({
   isOpen,
   handleClose,
   formik,
-  formFields
+  formFields,
+  formType
 }) {
   const classes = useStyles();
 
@@ -133,7 +137,7 @@ export default function CreateOrEditModal({
           fullWidth={true}
           className="mt-5"
         >
-          Create
+          {formType === FormTypes.CREATE ? "Create" : "Update"}
         </Button>
       </form>
     </Box>
