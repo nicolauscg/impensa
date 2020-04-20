@@ -31,10 +31,10 @@ type UserUpdate struct {
 }
 
 type UserUpdateFields struct {
-	Username string `json:"username,omitempty" bson:"username,omitempty"`
-	Email    string `json:"email,omitempty" bson:"email,omitempty"`
-	Password string `json:"password,omitempty" bson:"password,omitempty"`
-	Picture  string `json:"picture,omitempty" bson:"picture,omitempty"`
+	Username *string `json:"username,omitempty" bson:"username,omitempty"`
+	Email    *string `json:"email,omitempty" bson:"email,omitempty"`
+	Password *string `json:"password,omitempty" bson:"password,omitempty"`
+	Picture  *string `json:"picture,omitempty" bson:"picture,omitempty"`
 }
 
 type UserDelete struct {

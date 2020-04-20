@@ -1,8 +1,14 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/base64"
+	"image"
+	"image/png"
 	"net/http"
+	"strings"
 
+	"github.com/disintegration/imaging"
 	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -40,6 +46,15 @@ func (o *UserController) UpdateUser(userUpdate dt.UserUpdate) {
 
 		return
 	}
+	if userUpdate.Update.Picture != nil {
+		resizedBase64Img, err := resizeBase64PngImage(*userUpdate.Update.Picture, 180)
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+		userUpdate.Update.Picture = &resizedBase64Img
+	}
 	updateResult, err := o.Handler.Orms.User.UpdateOneById(userUpdate.Id, &userUpdate.Update)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
@@ -65,4 +80,18 @@ func (o *UserController) DeleteUser(userDelete dt.UserDelete) {
 		return
 	}
 	o.ResponseBuilder.SetData(deleteResult).ServeJSON()
+}
+
+func resizeBase64PngImage(originalBase64Png string, dimension int) (resizedBase64Png string, err error) {
+	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(originalBase64Png))
+	originalImage, _, err := image.Decode(reader)
+	if err != nil {
+		return
+	}
+	resizedImage := imaging.Resize(originalImage, dimension, dimension, imaging.NearestNeighbor)
+	var resizedImgBuffer bytes.Buffer
+	png.Encode(&resizedImgBuffer, resizedImage)
+	resizedBase64Png = base64.StdEncoding.EncodeToString(resizedImgBuffer.Bytes())
+
+	return
 }
