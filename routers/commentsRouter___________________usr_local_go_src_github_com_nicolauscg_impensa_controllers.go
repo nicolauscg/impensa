@@ -151,7 +151,15 @@ func init() {
             Method: "GetAllTransactions",
             Router: `/`,
             AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("description"),
+				param.New("account"),
+				param.New("category"),
+				param.New("dateTimeStart"),
+				param.New("dateTimeEnd"),
+				param.New("amountMoreThan"),
+				param.New("amountLessThan"),
+			),
             Filters: nil,
             Params: nil})
 

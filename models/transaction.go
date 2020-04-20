@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
@@ -12,7 +13,7 @@ import (
 
 type TransactionOrmer interface {
 	InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error)
-	GetManyByUserId(userId primitive.ObjectID) ([]*dt.Transaction, error)
+	GetManyByUserId(userId primitive.ObjectID, query dt.TransactionQuery) ([]*dt.Transaction, error)
 	GetUserIdsByIds(ids []primitive.ObjectID) ([]primitive.ObjectID, error)
 	GetOneById(id primitive.ObjectID) (*dt.Transaction, error)
 	UpdateManyByIds(ids []primitive.ObjectID, update *dt.TransactionUpdateFields) (*mongo.UpdateResult, error)
@@ -31,8 +32,27 @@ func (o *transactionOrm) InsertOne(insert dt.TransactionInsert) (*mongo.InsertOn
 	return o.transactionCollection.InsertOne(context.TODO(), insert)
 }
 
-func (o *transactionOrm) GetManyByUserId(userId primitive.ObjectID) (transactions []*dt.Transaction, err error) {
-	cur, err := o.transactionCollection.Find(context.TODO(), bson.D{{"user", userId}})
+func (o *transactionOrm) GetManyByUserId(userId primitive.ObjectID, query dt.TransactionQuery) (transactions []*dt.Transaction, err error) {
+	dbQuery := bson.D{{"user", userId}}
+	if query.Description != nil {
+		dbQuery = append(dbQuery, bson.E{"description", bson.M{"$regex": fmt.Sprintf(".*%v.*", *query.Description), "$options": "i"}})
+	}
+	if query.Account != nil {
+		dbQuery = append(dbQuery, bson.E{"account", *query.Account})
+	}
+	if query.Category != nil {
+		dbQuery = append(dbQuery, bson.E{"category", *query.Category})
+	}
+	if query.DateTimeStart != nil && query.DateTimeEnd != nil {
+		dbQuery = append(dbQuery, bson.E{"dateTime", bson.M{"$gt": *query.DateTimeStart, "$lt": *query.DateTimeEnd}})
+	}
+	if query.AmountMoreThan != nil {
+		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$gt": *query.AmountMoreThan}})
+	}
+	if query.AmountLessThan != nil {
+		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$lt": *query.AmountLessThan}})
+	}
+	cur, err := o.transactionCollection.Find(context.TODO(), dbQuery)
 	if err != nil {
 		return
 	}

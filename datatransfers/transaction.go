@@ -32,6 +32,16 @@ type TransactionInsert struct {
 	Picture     *string             `json:"picture,omitempty" bson:"picture,omitempty"`
 }
 
+type TransactionQuery struct {
+	Account        *primitive.ObjectID `json:"account,omitempty" bson:"account,omitempty"`
+	Category       *primitive.ObjectID `json:"category,omitempty" bson:"category,omitempty"`
+	Description    *string             `json:"description,omitempty" bson:"description,omitempty"`
+	DateTimeStart  *time.Time          `json:"dateTimeStart,omitempty" bson:"dateTimeStart,omitempty"`
+	DateTimeEnd    *time.Time          `json:"dateTimeEnd,omitempty" bson:"dateTimeEnd,omitempty"`
+	AmountMoreThan *float32            `json:"amountMoreThan,omitempty" bson:"amountMoreThan,omitempty"`
+	AmountLessThan *float32            `json:"amountLessThan,omitempty" bson:"amountLessThan,omitempty"`
+}
+
 type TransactionUpdate struct {
 	Ids    []primitive.ObjectID    `json:"ids" bson:"ids"`
 	Update TransactionUpdateFields `json:"update" bson:"update"`

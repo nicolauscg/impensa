@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
@@ -47,13 +48,40 @@ func (o *TransactionController) GetTransaction(id string) {
 }
 
 // @Title get all transactions
+// @Param description  query  string false  "description"
+// @Param account  query  string false  "account"
+// @Param category  query string false  "category"
+// @Param dateTimeStart  query  time.Time false  "dateTimeStart"
+// @Param dateTimeEnd  query  time.Time false  "dateTimeEnd"
 // @router / [get]
-func (o *TransactionController) GetAllTransactions() {
-	transactions, err := o.Handler.Orms.Transaction.GetManyByUserId(o.UserId)
+func (o *TransactionController) GetAllTransactions(
+	description *string,
+	account *string,
+	category *string,
+	dateTimeStart *time.Time,
+	dateTimeEnd *time.Time,
+	amountMoreThan *float32,
+	amountLessThan *float32,
+) {
+	var accountObjectId, categoryObjectId *primitive.ObjectID = nil, nil
+	if account != nil {
+		tmp, _ := primitive.ObjectIDFromHex(*account)
+		accountObjectId = &tmp
+	}
+	if category != nil {
+		tmp, _ := primitive.ObjectIDFromHex(*category)
+		categoryObjectId = &tmp
+	}
+	transactions, err := o.Handler.Orms.Transaction.GetManyByUserId(
+		o.UserId, dt.TransactionQuery{accountObjectId, categoryObjectId, description, dateTimeStart, dateTimeEnd, amountMoreThan, amountLessThan},
+	)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
+	}
+	if transactions == nil {
+		transactions = []*dt.Transaction{}
 	}
 	o.ResponseBuilder.SetData(transactions).ServeJSON()
 }
