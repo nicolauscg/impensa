@@ -15,6 +15,7 @@ import (
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthController struct {
@@ -25,9 +26,13 @@ type AuthController struct {
 // @Param credential  body  dt.AuthLogin true  "credential"
 // @router /login [post]
 func (o *AuthController) Login(credential dt.AuthLogin) {
-	user, err := o.Handler.Orms.User.GetOneByEmailAndPassword(credential.Email, credential.Password)
+	user, err := o.Handler.Orms.User.GetOneByEmail(credential.Email)
 	if err == mongo.ErrNoDocuments {
-		o.ResponseBuilder.SetError(http.StatusUnauthorized, constants.ErrorIncorrectCredential).ServeJSON()
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, constants.ErrorEmailNotRegistered).ServeJSON()
+
+		return
+	} else if !comparePasswords(user.Password, credential.Password) {
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, constants.ErrorIncorrectPassword).ServeJSON()
 
 		return
 	} else if err != nil {
@@ -35,8 +40,15 @@ func (o *AuthController) Login(credential dt.AuthLogin) {
 
 		return
 	}
-
-	token, err := createJwtToken(user.Id)
+	var jwtExpiry time.Duration
+	var cookieExpiry int
+	if credential.RememberMe {
+		jwtExpiry = time.Hour * 24 * 7 * 4
+		cookieExpiry = 60 * 60 * 24 * 7 * 4
+	} else {
+		jwtExpiry = time.Hour * 24
+	}
+	token, err := createJwtToken(user.Id, jwtExpiry)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusUnauthorized, err.Error()).ServeJSON()
 
@@ -44,8 +56,7 @@ func (o *AuthController) Login(credential dt.AuthLogin) {
 	}
 	authPayloadJson, _ := json.Marshal(dt.AuthPayload{user.Id, user.Username, token})
 	if credential.RememberMe {
-		oneWeek := 60 * 60 * 24 * 7
-		o.Ctx.SetCookie("impensa", string(authPayloadJson), 4 * oneWeek)
+		o.Ctx.SetCookie("impensa", string(authPayloadJson), cookieExpiry)
 	} else {
 		o.Ctx.SetCookie("impensa", string(authPayloadJson))
 	}
@@ -56,7 +67,14 @@ func (o *AuthController) Login(credential dt.AuthLogin) {
 // @Param newUser  body  dt.AuthRegister true  "newUser"
 // @router /register [post]
 func (o *AuthController) Register(newUser dt.AuthRegister) {
-	_, err := o.Handler.Orms.User.InsertOne(newUser)
+	hashedPassword, err := hashAndSalt(newUser.Password)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	newUser.Password = hashedPassword
+	_, err = o.Handler.Orms.User.InsertOne(newUser)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
@@ -84,12 +102,11 @@ func AuthFilter(ctx *context.Context) {
 	ctx.Input.SetParam("userId", claims["userId"].(string))
 }
 
-func createJwtToken(userId primitive.ObjectID) (string, error) {
+func createJwtToken(userId primitive.ObjectID, expiry time.Duration) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["userId"] = userId
-	oneWeek := time.Hour * 24 * 7
-	claims["exp"] = time.Now().Add(4 * oneWeek).Unix()
+	claims["exp"] = time.Now().Add(expiry).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString([]byte(os.Getenv(constants.EnvApiSecret)))
@@ -121,4 +138,22 @@ func validateJwtToken(tokenString string) (claims jwt.MapClaims, err error) {
 	}
 
 	return
+}
+
+func hashAndSalt(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+	if err != nil {
+		return "", err
+	}
+
+	return string(hash), nil
+}
+
+func comparePasswords(hashedPassword string, plainPassword string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
+	if err != nil {
+		return false
+	}
+
+	return true
 }

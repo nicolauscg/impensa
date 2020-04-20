@@ -13,7 +13,7 @@ import (
 type UserOrmer interface {
 	InsertOne(insert dt.AuthRegister) (*mongo.InsertOneResult, error)
 	GetOneById(id primitive.ObjectID) (*dt.UserItem, error)
-	GetOneByEmailAndPassword(email string, password string) (*dt.User, error)
+	GetOneByEmail(email string) (*dt.User, error)
 	UpdateOneById(id primitive.ObjectID, update *dt.UserUpdateFields) (*mongo.UpdateResult, error)
 	DeleteOneById(id primitive.ObjectID) (*mongo.DeleteResult, error)
 }
@@ -39,8 +39,8 @@ func (o *userOrm) GetOneById(id primitive.ObjectID) (transaction *dt.UserItem, e
 	return
 }
 
-func (o *userOrm) GetOneByEmailAndPassword(email string, password string) (transaction *dt.User, err error) {
-	err = o.userCollection.FindOne(context.TODO(), bson.D{{"email", email}, {"password", password}}).Decode(&transaction)
+func (o *userOrm) GetOneByEmail(email string) (transaction *dt.User, err error) {
+	err = o.userCollection.FindOne(context.TODO(), bson.D{{"email", email}}).Decode(&transaction)
 	if err != nil {
 		return
 	}

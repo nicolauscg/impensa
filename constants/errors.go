@@ -1,6 +1,7 @@
 package constants
 
 const (
-	ErrorIncorrectCredential         = "incorrect username or password"
+	ErrorEmailNotRegistered          = "email is not registered"
+	ErrorIncorrectPassword           = "password is incorrect"
 	ErrorResourceForbiddenOrNotFound = "not authorized to access or missing resource"
 )

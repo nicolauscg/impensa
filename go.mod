@@ -9,4 +9,5 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	go.mongodb.org/mongo-driver v1.3.1
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 )
