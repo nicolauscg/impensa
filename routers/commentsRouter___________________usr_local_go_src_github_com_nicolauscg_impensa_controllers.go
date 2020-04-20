@@ -159,6 +159,8 @@ func init() {
 				param.New("dateTimeEnd"),
 				param.New("amountMoreThan"),
 				param.New("amountLessThan"),
+				param.New("limit"),
+				param.New("afterCursor"),
 			),
             Filters: nil,
             Params: nil})

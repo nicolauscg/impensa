@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type TransactionOrmer interface {
@@ -35,6 +36,9 @@ func (o *transactionOrm) InsertOne(insert dt.TransactionInsert) (*mongo.InsertOn
 
 func (o *transactionOrm) GetMany(query dt.TransactionQuery) (transactions []*dt.Transaction, err error) {
 	dbQuery := bson.D{{"user", query.User}}
+	if query.AfterCursor != nil {
+		dbQuery = append(dbQuery, bson.E{"_id", bson.M{"$gt": &query.AfterCursor}})
+	}
 	if query.Description != nil {
 		dbQuery = append(dbQuery, bson.E{"description", bson.M{"$regex": fmt.Sprintf(".*%v.*", *query.Description), "$options": "i"}})
 	}
@@ -53,7 +57,10 @@ func (o *transactionOrm) GetMany(query dt.TransactionQuery) (transactions []*dt.
 	if query.AmountLessThan != nil {
 		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$lt": *query.AmountLessThan}})
 	}
-	cur, err := o.transactionCollection.Find(context.TODO(), dbQuery)
+	findOptions := options.Find()
+	findOptions.SetLimit(int64(query.Limit))
+	findOptions.SetSort(bson.D{{"_id", 1}})
+	cur, err := o.transactionCollection.Find(context.TODO(), dbQuery, findOptions)
 	if err != nil {
 		return
 	}

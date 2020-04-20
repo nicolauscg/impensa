@@ -41,6 +41,8 @@ type TransactionQuery struct {
 	DateTimeEnd    *time.Time          `json:"dateTimeEnd,omitempty" bson:"dateTimeEnd,omitempty"`
 	AmountMoreThan *float32            `json:"amountMoreThan,omitempty" bson:"amountMoreThan,omitempty"`
 	AmountLessThan *float32            `json:"amountLessThan,omitempty" bson:"amountLessThan,omitempty"`
+	Limit          int                 `json:"limit,omitempty" bson:"limit,omitempty"`
+	AfterCursor    *primitive.ObjectID `json:"afterCursor,omitempty" bson:"afterCursor,omitempty"`
 }
 
 type TransactionDescriptionAutocomplete struct {
