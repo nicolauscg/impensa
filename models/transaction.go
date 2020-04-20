@@ -14,6 +14,7 @@ import (
 type TransactionOrmer interface {
 	InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error)
 	GetManyByUserId(userId primitive.ObjectID, query dt.TransactionQuery) ([]*dt.Transaction, error)
+	GetSomeDescriptionsByPartialDescription(partialDescription *dt.TransactionDescriptionAutocomplete) ([]*dt.TransactionDescriptionAutocompleteResponse, error)
 	GetUserIdsByIds(ids []primitive.ObjectID) ([]primitive.ObjectID, error)
 	GetOneById(id primitive.ObjectID) (*dt.Transaction, error)
 	UpdateManyByIds(ids []primitive.ObjectID, update *dt.TransactionUpdateFields) (*mongo.UpdateResult, error)
@@ -64,6 +65,22 @@ func (o *transactionOrm) GetManyByUserId(userId primitive.ObjectID, query dt.Tra
 	return
 }
 
+func (o *transactionOrm) GetSomeDescriptionsByPartialDescription(autocomplete *dt.TransactionDescriptionAutocomplete) (suggestions []*dt.TransactionDescriptionAutocompleteResponse, err error) {
+	cur, err := o.transactionCollection.Aggregate(context.TODO(), bson.A{
+		bson.D{{"$match", bson.D{{"description", bson.M{"$regex": fmt.Sprintf(".*%v.*", *autocomplete.Description), "$options": "i"}}}}},
+		bson.D{{"$group", bson.D{
+			{"_id", "$description"},
+		}}},
+		bson.D{{"$limit", autocomplete.Count}},
+	})
+	err = cur.All(context.TODO(), &suggestions)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (o *transactionOrm) GetUserIdsByIds(ids []primitive.ObjectID) (userIds []primitive.ObjectID, err error) {
 	var aggregateResult []map[string]primitive.ObjectID
 	userIds = make([]primitive.ObjectID, 0)
@@ -83,6 +100,7 @@ func (o *transactionOrm) GetUserIdsByIds(ids []primitive.ObjectID) (userIds []pr
 	for _, elem := range aggregateResult {
 		userIds = append(userIds, elem["_id"])
 	}
+
 	return
 }
 

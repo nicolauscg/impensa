@@ -86,6 +86,30 @@ func (o *TransactionController) GetAllTransactions(
 	o.ResponseBuilder.SetData(transactions).ServeJSON()
 }
 
+// @Title get description autocomplete
+// @Param description  query  string false  "description"
+// @router /description/complete [get]
+func (o *TransactionController) GetSomeDescriptionAutocomplete(description *string) {
+	if description == nil || len(*description) < 3 {
+		o.ResponseBuilder.SetData([]string{}).ServeJSON()
+
+		return
+	}
+	suggestions := []string{}
+	descriptionObjectList, err := o.Handler.Orms.Transaction.GetSomeDescriptionsByPartialDescription(
+		&dt.TransactionDescriptionAutocomplete{&o.UserId, description, 5},
+	)
+	for _, descriptionObject := range descriptionObjectList {
+		suggestions = append(suggestions, *descriptionObject.Id)
+	}
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	o.ResponseBuilder.SetData(suggestions).ServeJSON()
+}
+
 // @Title update transactions by ids
 // @Param transactionUpdate  body  dt.TransactionUpdate true  "transactionUpdate"
 // @router / [put]

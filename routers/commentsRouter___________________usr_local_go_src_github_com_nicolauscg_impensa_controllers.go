@@ -196,6 +196,17 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
+        beego.ControllerComments{
+            Method: "GetSomeDescriptionAutocomplete",
+            Router: `/description/complete`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("description"),
+			),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"],
         beego.ControllerComments{
             Method: "UpdateUser",

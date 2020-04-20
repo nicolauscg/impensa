@@ -42,6 +42,16 @@ type TransactionQuery struct {
 	AmountLessThan *float32            `json:"amountLessThan,omitempty" bson:"amountLessThan,omitempty"`
 }
 
+type TransactionDescriptionAutocomplete struct {
+	User        *primitive.ObjectID `json:"user,omitempty" bson:"user,omitempty"`
+	Description *string             `json:"description,omitempty" bson:"description,omitempty"`
+	Count       int                 `json:"count,omitempty" bson:"count,omitempty"`
+}
+
+type TransactionDescriptionAutocompleteResponse struct {
+	Id *string `json:"_id,omitempty" bson:"_id,omitempty"`
+}
+
 type TransactionUpdate struct {
 	Ids    []primitive.ObjectID    `json:"ids" bson:"ids"`
 	Update TransactionUpdateFields `json:"update" bson:"update"`
