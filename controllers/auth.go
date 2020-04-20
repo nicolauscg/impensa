@@ -67,14 +67,16 @@ func (o *AuthController) Login(credential dt.AuthLogin) {
 // @Param newUser  body  dt.AuthRegister true  "newUser"
 // @router /register [post]
 func (o *AuthController) Register(newUser dt.AuthRegister) {
+	newUser.Email = strings.ToLower(newUser.Email)
+	newUserWithHashedPassword := newUser
 	hashedPassword, err := hashAndSalt(newUser.Password)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
-	newUser.Password = hashedPassword
-	_, err = o.Handler.Orms.User.InsertOne(newUser)
+	newUserWithHashedPassword.Password = hashedPassword
+	_, err = o.Handler.Orms.User.InsertOne(newUserWithHashedPassword)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
