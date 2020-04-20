@@ -8,6 +8,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ResponseBuilder interface {
@@ -23,10 +24,16 @@ type responseBuild struct {
 }
 
 type apiResponse struct {
-	Data  interface{}       `json:"data"`
-	Error *apiResponseError `json:"error,omitempty"`
+	Data   interface{}        `json:"data"`
+	Paging *apiResponsePaging `json:"paging,omitempty"`
+	Error  *apiResponseError  `json:"error,omitempty"`
 }
 
+type apiResponsePaging struct {
+	HasNext     bool                `json:"hasNext"`
+	AfterCursor *primitive.ObjectID `json:"afterCursor"`
+	NextUrl     *string             `json:"nextUrl"`
+}
 type apiResponseError struct {
 	Code     int                          `json:"code"`
 	Message  string                       `json:"message"`
@@ -56,6 +63,12 @@ func NewResponseBuilder(responseContext *context.Response) *responseBuild {
 
 func (r *responseBuild) SetData(data interface{}) *responseBuild {
 	r.response.Data = data
+
+	return r
+}
+
+func (r *responseBuild) SetPaging(hasNext bool, afterCursor *primitive.ObjectID, next *string) *responseBuild {
+	r.response.Paging = &apiResponsePaging{hasNext, afterCursor, next}
 
 	return r
 }
