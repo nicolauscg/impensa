@@ -13,7 +13,7 @@ import (
 
 type TransactionOrmer interface {
 	InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error)
-	GetManyByUserId(userId primitive.ObjectID, query dt.TransactionQuery) ([]*dt.Transaction, error)
+	GetMany(query dt.TransactionQuery) ([]*dt.Transaction, error)
 	GetSomeDescriptionsByPartialDescription(partialDescription *dt.TransactionDescriptionAutocomplete) ([]*dt.TransactionDescriptionAutocompleteResponse, error)
 	GetUserIdsByIds(ids []primitive.ObjectID) ([]primitive.ObjectID, error)
 	GetOneById(id primitive.ObjectID) (*dt.Transaction, error)
@@ -33,8 +33,8 @@ func (o *transactionOrm) InsertOne(insert dt.TransactionInsert) (*mongo.InsertOn
 	return o.transactionCollection.InsertOne(context.TODO(), insert)
 }
 
-func (o *transactionOrm) GetManyByUserId(userId primitive.ObjectID, query dt.TransactionQuery) (transactions []*dt.Transaction, err error) {
-	dbQuery := bson.D{{"user", userId}}
+func (o *transactionOrm) GetMany(query dt.TransactionQuery) (transactions []*dt.Transaction, err error) {
+	dbQuery := bson.D{{"user", query.User}}
 	if query.Description != nil {
 		dbQuery = append(dbQuery, bson.E{"description", bson.M{"$regex": fmt.Sprintf(".*%v.*", *query.Description), "$options": "i"}})
 	}

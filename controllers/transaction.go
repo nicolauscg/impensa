@@ -72,8 +72,8 @@ func (o *TransactionController) GetAllTransactions(
 		tmp, _ := primitive.ObjectIDFromHex(*category)
 		categoryObjectId = &tmp
 	}
-	transactions, err := o.Handler.Orms.Transaction.GetManyByUserId(
-		o.UserId, dt.TransactionQuery{accountObjectId, categoryObjectId, description, dateTimeStart, dateTimeEnd, amountMoreThan, amountLessThan},
+	transactions, err := o.Handler.Orms.Transaction.GetMany(
+		dt.TransactionQuery{&o.UserId, accountObjectId, categoryObjectId, description, dateTimeStart, dateTimeEnd, amountMoreThan, amountLessThan},
 	)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()

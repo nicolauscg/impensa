@@ -33,6 +33,7 @@ type TransactionInsert struct {
 }
 
 type TransactionQuery struct {
+	User           *primitive.ObjectID `json:"user,omitempty" bson:"user,omitempty"`
 	Account        *primitive.ObjectID `json:"account,omitempty" bson:"account,omitempty"`
 	Category       *primitive.ObjectID `json:"category,omitempty" bson:"category,omitempty"`
 	Description    *string             `json:"description,omitempty" bson:"description,omitempty"`
