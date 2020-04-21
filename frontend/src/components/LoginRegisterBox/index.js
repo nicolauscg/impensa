@@ -1,5 +1,6 @@
 import React from "react";
 import SwipeableViews from "react-swipeable-views";
+import * as R from "ramda";
 
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import {
@@ -11,7 +12,9 @@ import {
   Tabs,
   AppBar,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  FormControl,
+  FormHelperText
 } from "@material-ui/core";
 
 const TabPanel = props => {
@@ -80,24 +83,43 @@ const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
       >
         <TabPanel value={value} index={0} dir={theme.direction}>
           <form onSubmit={formikLogin.handleSubmit}>
-            <TextField
-              id="email"
-              label="email"
-              name="email"
-              type="email"
-              onChange={formikLogin.handleChange}
-              value={formikLogin.values.email}
+            <FormControl
               fullWidth={true}
-            />
-            <TextField
-              id="password"
-              label="password"
-              name="password"
-              type="password"
-              onChange={formikLogin.handleChange}
-              value={formikLogin.values.password}
+              error={R.hasPath(["email"], formikLogin.errors)}
+            >
+              <TextField
+                id="email"
+                label="email"
+                name="email"
+                type="email"
+                onChange={formikLogin.handleChange}
+                value={formikLogin.values.email}
+                fullWidth={true}
+                error={R.hasPath(["email"], formikLogin.errors)}
+              />
+              <FormHelperText id="my-helper-text">
+                {R.propOr("", "email", formikLogin.errors)}
+              </FormHelperText>
+            </FormControl>
+
+            <FormControl
               fullWidth={true}
-            />
+              error={R.hasPath(["password"], formikLogin.errors)}
+            >
+              <TextField
+                id="password"
+                label="password"
+                name="password"
+                type="password"
+                onChange={formikLogin.handleChange}
+                value={formikLogin.values.password}
+                fullWidth={true}
+                error={R.hasPath(["password"], formikLogin.errors)}
+              />
+              <FormHelperText id="my-helper-text">
+                {R.propOr("", "password", formikLogin.errors)}
+              </FormHelperText>
+            </FormControl>
             <FormControlLabel
               control={
                 <Checkbox

@@ -22,13 +22,22 @@ const AuthPage = ({ history }) => {
         password: "",
         rememberMe: false
       },
-      onSubmit: values => {
+      onSubmit: (values, formikBag) => {
         postLogin({
           data: values
-        }).then(result => {
-          localStorage.impensa = JSON.stringify(result.data.data);
-          history.push("/");
-        });
+        })
+          .then(result => {
+            localStorage.impensa = JSON.stringify(result.data.data);
+            history.push("/");
+          })
+          .catch(err => {
+            const errorMessage = err.response.data.error.message;
+            if (errorMessage.indexOf("email") !== -1) {
+              formikBag.setFieldError("email", errorMessage);
+            } else if (errorMessage.indexOf("password") !== -1) {
+              formikBag.setFieldError("password", errorMessage);
+            }
+          });
       }
     }),
     formikRegister: useFormik({
