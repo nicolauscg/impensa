@@ -51,11 +51,47 @@ export const urlGetAllAccounts = () => ({
   type: RESPONSE_TYPE.ARRAY,
   manual: false
 });
-export const urlGetAllCategory = () => ({
+export const urlCreateAccount = () => ({
+  url: `${baseUrl}/account`,
+  method: "POST",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlUpdateAccount = () => ({
+  url: `${baseUrl}/account`,
+  method: "PUT",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlDeleteAccount = () => ({
+  url: `${baseUrl}/account`,
+  method: "DELETE",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlGetAllCategories = () => ({
   url: `${baseUrl}/category`,
   method: "GET",
   type: RESPONSE_TYPE.ARRAY,
   manual: false
+});
+export const urlCreateCategory = () => ({
+  url: `${baseUrl}/category`,
+  method: "POST",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlUpdateCategory = () => ({
+  url: `${baseUrl}/category`,
+  method: "PUT",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlDeleteCategory = () => ({
+  url: `${baseUrl}/category`,
+  method: "DELETE",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
 });
 
 /*

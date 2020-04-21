@@ -9,7 +9,7 @@ import {
   urlGetAllTransactions,
   urlCreateTransaction,
   urlGetAllAccounts,
-  urlGetAllCategory,
+  urlGetAllCategories,
   urlUpdateTransaction,
   urlDeleteTransaction
 } from "../../api";
@@ -47,7 +47,7 @@ const TransactionsPage = () => {
     urlGetAllAccounts()
   );
   const [{ data: categoriesData, loading: categoriesLoading }] = useAxiosSafely(
-    urlGetAllCategory()
+    urlGetAllCategories()
   );
   const [, createTransaction] = useAxiosSafely(urlCreateTransaction());
   const [, updateTransaction] = useAxiosSafely(urlUpdateTransaction());
