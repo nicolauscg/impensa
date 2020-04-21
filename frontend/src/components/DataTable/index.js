@@ -71,6 +71,7 @@ export default function DataTable({
             {headerNames.map((headerName, i) => (
               <TableCell key={i}>{headerName}</TableCell>
             ))}
+            <TableCell />
           </TableRow>
         </TableHead>
         <TableBody>
