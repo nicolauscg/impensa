@@ -4,6 +4,7 @@ import NotFoundPage from "../../components/NotFoundPage";
 import TransactionsPage from "../TransactionsPage";
 import AccountsPage from "../AccountsPage";
 import CategoriesPage from "../CategoriesPage";
+import ProfilePage from "../ProfilePage";
 
 export const routes = [
   {
@@ -34,6 +35,12 @@ export const routes = [
     component: CategoriesPage,
     exact: true,
     path: "/category",
+    protected: true
+  },
+  {
+    component: ProfilePage,
+    exact: true,
+    path: "/profile",
     protected: true
   },
   { component: NotFoundPage }

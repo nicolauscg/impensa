@@ -10,10 +10,14 @@ import Container from "@material-ui/core/Container";
 
 import { theme } from "./theme";
 import { routes } from "./routes";
+import ProfileBadge from "../../components/ProfileBadge";
 
 const useStyles = makeStyles(() => ({
   root: {
     minHeight: "100vh"
+  },
+  container: {
+    position: "relative"
   }
 }));
 
@@ -26,11 +30,6 @@ export const App = ({ history }) => {
     )
   );
   const classes = useStyles();
-  const pageContent = (
-    <Container fixed={true} className="d-flex flex-column">
-      <Switch>{pages}</Switch>
-    </Container>
-  );
 
   return (
     <ThemeProvider theme={theme}>
@@ -41,11 +40,19 @@ export const App = ({ history }) => {
               <Navbar history={history} />
             </Grid>
             <Grid container item xs={10} className="py-4">
-              {pageContent}
+              <Container
+                fixed={true}
+                className={`d-flex flex-column ${classes.container}`}
+              >
+                <ProfileBadge history={history} />
+                <Switch>{pages}</Switch>
+              </Container>
             </Grid>
           </>
         ) : (
-          <>{pageContent}</>
+          <Container fixed={true} className="d-flex flex-column">
+            <Switch>{pages}</Switch>
+          </Container>
         )}
       </Grid>
     </ThemeProvider>
