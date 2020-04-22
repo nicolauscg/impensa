@@ -55,6 +55,11 @@ func (o *AccountController) GetAllAccounts() {
 
 		return
 	}
+	if accounts == nil || len(accounts) < 1 {
+		o.ResponseBuilder.SetData([]*dt.Account{}).ServeJSON()
+
+		return
+	}
 	o.ResponseBuilder.SetData(accounts).ServeJSON()
 }
 

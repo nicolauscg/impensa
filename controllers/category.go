@@ -55,6 +55,11 @@ func (o *CategoryController) GetAllCategories() {
 
 		return
 	}
+	if categories == nil || len(categories) < 1 {
+		o.ResponseBuilder.SetData([]*dt.Account{}).ServeJSON()
+
+		return
+	}
 	o.ResponseBuilder.SetData(categories).ServeJSON()
 }
 
