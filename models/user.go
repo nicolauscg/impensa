@@ -13,8 +13,9 @@ import (
 type UserOrmer interface {
 	InsertOne(insert dt.AuthRegister) (*mongo.InsertOneResult, error)
 	GetOneById(id primitive.ObjectID) (*dt.UserItem, error)
+	GetOneWithPasswordById(id primitive.ObjectID) (*dt.User, error)
 	GetOneByEmail(email string) (*dt.User, error)
-	UpdateOneById(id primitive.ObjectID, update *dt.UserUpdateFields) (*mongo.UpdateResult, error)
+	UpdateOneById(id primitive.ObjectID, update *dt.UserUpdateFieldsInModel) (*mongo.UpdateResult, error)
 	DeleteOneById(id primitive.ObjectID) (*mongo.DeleteResult, error)
 }
 
@@ -30,8 +31,8 @@ func (o *userOrm) InsertOne(insert dt.AuthRegister) (*mongo.InsertOneResult, err
 	return o.userCollection.InsertOne(context.TODO(), insert)
 }
 
-func (o *userOrm) GetOneById(id primitive.ObjectID) (transaction *dt.UserItem, err error) {
-	err = o.userCollection.FindOne(context.TODO(), bson.D{{"_id", id}}).Decode(&transaction)
+func (o *userOrm) GetOneById(id primitive.ObjectID) (user *dt.UserItem, err error) {
+	err = o.userCollection.FindOne(context.TODO(), bson.D{{"_id", id}}).Decode(&user)
 	if err != nil {
 		return
 	}
@@ -39,8 +40,8 @@ func (o *userOrm) GetOneById(id primitive.ObjectID) (transaction *dt.UserItem, e
 	return
 }
 
-func (o *userOrm) GetOneByEmail(email string) (transaction *dt.User, err error) {
-	err = o.userCollection.FindOne(context.TODO(), bson.D{{"email", email}}).Decode(&transaction)
+func (o *userOrm) GetOneWithPasswordById(id primitive.ObjectID) (user *dt.User, err error) {
+	err = o.userCollection.FindOne(context.TODO(), bson.D{{"_id", id}}).Decode(&user)
 	if err != nil {
 		return
 	}
@@ -48,7 +49,16 @@ func (o *userOrm) GetOneByEmail(email string) (transaction *dt.User, err error) 
 	return
 }
 
-func (o *userOrm) UpdateOneById(id primitive.ObjectID, update *dt.UserUpdateFields) (updateResult *mongo.UpdateResult, err error) {
+func (o *userOrm) GetOneByEmail(email string) (user *dt.User, err error) {
+	err = o.userCollection.FindOne(context.TODO(), bson.D{{"email", email}}).Decode(&user)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (o *userOrm) UpdateOneById(id primitive.ObjectID, update *dt.UserUpdateFieldsInModel) (updateResult *mongo.UpdateResult, err error) {
 	updateResult, err = o.userCollection.UpdateMany(context.Background(), bson.D{{"_id", id}}, bson.D{{"$set", update}})
 	if err != nil {
 		return

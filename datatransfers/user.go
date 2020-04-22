@@ -31,6 +31,14 @@ type UserUpdate struct {
 }
 
 type UserUpdateFields struct {
+	Username    *string `json:"username,omitempty" bson:"username,omitempty"`
+	Email       *string `json:"email,omitempty" bson:"email,omitempty"`
+	OldPassword *string `json:"oldPassword,omitempty" bson:"oldPassword,omitempty"`
+	NewPassword *string `json:"newPassword,omitempty" bson:"newPassword,omitempty"`
+	Picture     *string `json:"picture,omitempty" bson:"picture,omitempty"`
+}
+
+type UserUpdateFieldsInModel struct {
 	Username *string `json:"username,omitempty" bson:"username,omitempty"`
 	Email    *string `json:"email,omitempty" bson:"email,omitempty"`
 	Password *string `json:"password,omitempty" bson:"password,omitempty"`

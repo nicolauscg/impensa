@@ -3,10 +3,13 @@ package controllers
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"image"
 	"image/png"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/nicolauscg/impensa/constants"
@@ -46,6 +49,10 @@ func (o *UserController) UpdateUser(userUpdate dt.UserUpdate) {
 
 		return
 	}
+	userUpdateInModel := &dt.UserUpdateFieldsInModel{
+		Username: userUpdate.Update.Username,
+		Email:    userUpdate.Update.Email,
+	}
 	if userUpdate.Update.Picture != nil {
 		resizedBase64Img, err := resizeBase64PngImage(*userUpdate.Update.Picture, 180)
 		if err != nil {
@@ -53,14 +60,49 @@ func (o *UserController) UpdateUser(userUpdate dt.UserUpdate) {
 
 			return
 		}
-		userUpdate.Update.Picture = &resizedBase64Img
+		userUpdateInModel.Picture = &resizedBase64Img
 	}
-	updateResult, err := o.Handler.Orms.User.UpdateOneById(userUpdate.Id, &userUpdate.Update)
+	if userUpdate.Update.OldPassword != nil && userUpdate.Update.NewPassword != nil {
+		user, err := o.Handler.Orms.User.GetOneWithPasswordById(userUpdate.Id)
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+		if !comparePasswords(user.Password, *userUpdate.Update.OldPassword) {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, constants.ErrorOldPasswordMismatch).ServeJSON()
+
+			return
+		} else {
+			hasedPassword, err := hashAndSalt(*userUpdate.Update.NewPassword)
+			if err != nil {
+				o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+				return
+			}
+
+			userUpdateInModel.Password = &hasedPassword
+		}
+	}
+	updateResult, err := o.Handler.Orms.User.UpdateOneById(
+		userUpdate.Id,
+		userUpdateInModel,
+	)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
+
+	jwtExpiry := time.Hour * 24
+	token, err := createJwtToken(userUpdate.Id, jwtExpiry)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, err.Error()).ServeJSON()
+
+		return
+	}
+	authPayloadJson, _ := json.Marshal(dt.AuthPayload{userUpdate.Id, *userUpdate.Update.Username, token})
+	o.Ctx.SetCookie("impensa", string(authPayloadJson))
 	o.ResponseBuilder.SetData(updateResult).ServeJSON()
 }
 
