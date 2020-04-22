@@ -39,6 +39,11 @@ const Navbar = props => {
       name: "categories",
       action: ({ history }) => () => history.push("/category"),
       authorized: true
+    },
+    {
+      name: "graph",
+      action: ({ history }) => () => history.push("/graph"),
+      authorized: true
     }
   ];
 

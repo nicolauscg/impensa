@@ -105,6 +105,18 @@ export const urlDeleteCategory = () => ({
   type: RESPONSE_TYPE.OBJECT,
   manual: true
 });
+export const urlGraphTransactionCategory = () => ({
+  url: `${baseUrl}/graph/transaction/category`,
+  method: "GET",
+  type: RESPONSE_TYPE.ARRAY,
+  manual: false
+});
+export const urlGraphTransactionAccount = () => ({
+  url: `${baseUrl}/graph/transaction/account`,
+  method: "GET",
+  type: RESPONSE_TYPE.ARRAY,
+  manual: false
+});
 
 /*
   wrapper for fetching data that returns

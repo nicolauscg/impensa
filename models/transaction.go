@@ -58,7 +58,9 @@ func (o *transactionOrm) GetMany(query dt.TransactionQuery) (transactions []*dt.
 		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$lt": *query.AmountLessThan}})
 	}
 	findOptions := options.Find()
-	findOptions.SetLimit(int64(query.Limit))
+	if query.Limit > 0 {
+		findOptions.SetLimit(int64(query.Limit))
+	}
 	findOptions.SetSort(bson.D{{"_id", 1}})
 	cur, err := o.transactionCollection.Find(context.TODO(), dbQuery, findOptions)
 	if err != nil {

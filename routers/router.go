@@ -92,6 +92,12 @@ func init() {
 				&controllers.CategoryController{controllers.BaseController{Handler: handler}},
 			),
 		),
+		beego.NSNamespace("/graph",
+			beego.NSBefore(controllers.AuthFilter),
+			beego.NSInclude(
+				&controllers.GraphController{controllers.BaseController{Handler: handler}},
+			),
+		),
 	)
 
 	beego.AddNamespace(ns)

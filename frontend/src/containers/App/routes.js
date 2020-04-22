@@ -5,6 +5,7 @@ import TransactionsPage from "../TransactionsPage";
 import AccountsPage from "../AccountsPage";
 import CategoriesPage from "../CategoriesPage";
 import ProfilePage from "../ProfilePage";
+import GraphPage from "../GraphPage";
 
 export const routes = [
   {
@@ -41,6 +42,12 @@ export const routes = [
     component: ProfilePage,
     exact: true,
     path: "/profile",
+    protected: true
+  },
+  {
+    component: GraphPage,
+    exact: true,
+    path: "/graph",
     protected: true
   },
   { component: NotFoundPage }
