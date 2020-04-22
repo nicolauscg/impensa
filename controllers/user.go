@@ -1,8 +1,16 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"image"
+	"image/png"
 	"net/http"
+	"strings"
+	"time"
 
+	"github.com/disintegration/imaging"
 	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -40,12 +48,60 @@ func (o *UserController) UpdateUser(userUpdate dt.UserUpdate) {
 
 		return
 	}
-	updateResult, err := o.Handler.Orms.User.UpdateOneById(userUpdate.Id, &userUpdate.Update)
+	userUpdateInModel := &dt.UserUpdateFieldsInModel{
+		Username: userUpdate.Update.Username,
+		Email:    userUpdate.Update.Email,
+	}
+	if userUpdate.Update.Picture != nil {
+		resizedBase64Img, err := resizeBase64PngImage(*userUpdate.Update.Picture, 180)
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+		userUpdateInModel.Picture = &resizedBase64Img
+	}
+	if userUpdate.Update.OldPassword != nil && userUpdate.Update.NewPassword != nil {
+		user, err := o.Handler.Orms.User.GetOneWithPasswordById(userUpdate.Id)
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+		if !comparePasswords(user.Password, *userUpdate.Update.OldPassword) {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, constants.ErrorOldPasswordMismatch).ServeJSON()
+
+			return
+		} else {
+			hasedPassword, err := hashAndSalt(*userUpdate.Update.NewPassword)
+			if err != nil {
+				o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+				return
+			}
+
+			userUpdateInModel.Password = &hasedPassword
+		}
+	}
+	updateResult, err := o.Handler.Orms.User.UpdateOneById(
+		userUpdate.Id,
+		userUpdateInModel,
+	)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
+
+	jwtExpiry := time.Hour * 24
+	token, err := createJwtToken(userUpdate.Id, jwtExpiry)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, err.Error()).ServeJSON()
+
+		return
+	}
+	authPayloadJson, _ := json.Marshal(dt.AuthPayload{userUpdate.Id, *userUpdate.Update.Username, token})
+	o.Ctx.SetCookie("impensa", string(authPayloadJson))
 	o.ResponseBuilder.SetData(updateResult).ServeJSON()
 }
 
@@ -65,4 +121,18 @@ func (o *UserController) DeleteUser(userDelete dt.UserDelete) {
 		return
 	}
 	o.ResponseBuilder.SetData(deleteResult).ServeJSON()
+}
+
+func resizeBase64PngImage(originalBase64Png string, dimension int) (resizedBase64Png string, err error) {
+	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(originalBase64Png))
+	originalImage, _, err := image.Decode(reader)
+	if err != nil {
+		return
+	}
+	resizedImage := imaging.Resize(originalImage, dimension, dimension, imaging.NearestNeighbor)
+	var resizedImgBuffer bytes.Buffer
+	png.Encode(&resizedImgBuffer, resizedImage)
+	resizedBase64Png = base64.StdEncoding.EncodeToString(resizedImgBuffer.Bytes())
+
+	return
 }

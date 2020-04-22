@@ -55,9 +55,11 @@ func init() {
 
 	ns := beego.NewNamespace("v1",
 		beego.NSBefore(cors.Allow(&cors.Options{
-			AllowOrigins:     allowedOrigins,
-			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-			AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type"},
+			AllowOrigins: allowedOrigins,
+			AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowHeaders: []string{
+				"Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type",
+			},
 			ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin"},
 			AllowCredentials: true,
 		})),
@@ -76,6 +78,24 @@ func init() {
 			beego.NSBefore(controllers.AuthFilter),
 			beego.NSInclude(
 				&controllers.UserController{controllers.BaseController{Handler: handler}},
+			),
+		),
+		beego.NSNamespace("/account",
+			beego.NSBefore(controllers.AuthFilter),
+			beego.NSInclude(
+				&controllers.AccountController{controllers.BaseController{Handler: handler}},
+			),
+		),
+		beego.NSNamespace("/category",
+			beego.NSBefore(controllers.AuthFilter),
+			beego.NSInclude(
+				&controllers.CategoryController{controllers.BaseController{Handler: handler}},
+			),
+		),
+		beego.NSNamespace("/graph",
+			beego.NSBefore(controllers.AuthFilter),
+			beego.NSInclude(
+				&controllers.GraphController{controllers.BaseController{Handler: handler}},
 			),
 		),
 	)

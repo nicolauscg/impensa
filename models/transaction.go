@@ -2,18 +2,21 @@ package models
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/nicolauscg/impensa/constants"
 	dt "github.com/nicolauscg/impensa/datatransfers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type TransactionOrmer interface {
 	InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error)
-	GetManyByOwnerId(ownerId primitive.ObjectID) ([]*dt.Transaction, error)
-	GetOwnerIdsByIds(ids []primitive.ObjectID) ([]primitive.ObjectID, error)
+	GetMany(query dt.TransactionQuery) ([]*dt.Transaction, error)
+	GetSomeDescriptionsByPartialDescription(partialDescription *dt.TransactionDescriptionAutocomplete) ([]*dt.TransactionDescriptionAutocompleteResponse, error)
+	GetUserIdsByIds(ids []primitive.ObjectID) ([]primitive.ObjectID, error)
 	GetOneById(id primitive.ObjectID) (*dt.Transaction, error)
 	UpdateManyByIds(ids []primitive.ObjectID, update *dt.TransactionUpdateFields) (*mongo.UpdateResult, error)
 	DeleteManyByIds(ids []primitive.ObjectID) (*mongo.DeleteResult, error)
@@ -31,8 +34,35 @@ func (o *transactionOrm) InsertOne(insert dt.TransactionInsert) (*mongo.InsertOn
 	return o.transactionCollection.InsertOne(context.TODO(), insert)
 }
 
-func (o *transactionOrm) GetManyByOwnerId(ownerId primitive.ObjectID) (transactions []*dt.Transaction, err error) {
-	cur, err := o.transactionCollection.Find(context.TODO(), bson.D{{"owner", ownerId}})
+func (o *transactionOrm) GetMany(query dt.TransactionQuery) (transactions []*dt.Transaction, err error) {
+	dbQuery := bson.D{{"user", query.User}}
+	if query.AfterCursor != nil {
+		dbQuery = append(dbQuery, bson.E{"_id", bson.M{"$gt": &query.AfterCursor}})
+	}
+	if query.Description != nil {
+		dbQuery = append(dbQuery, bson.E{"description", bson.M{"$regex": fmt.Sprintf(".*%v.*", *query.Description), "$options": "i"}})
+	}
+	if query.Account != nil {
+		dbQuery = append(dbQuery, bson.E{"account", *query.Account})
+	}
+	if query.Category != nil {
+		dbQuery = append(dbQuery, bson.E{"category", *query.Category})
+	}
+	if query.DateTimeStart != nil && query.DateTimeEnd != nil {
+		dbQuery = append(dbQuery, bson.E{"dateTime", bson.M{"$gt": *query.DateTimeStart, "$lt": *query.DateTimeEnd}})
+	}
+	if query.AmountMoreThan != nil {
+		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$gt": *query.AmountMoreThan}})
+	}
+	if query.AmountLessThan != nil {
+		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$lt": *query.AmountLessThan}})
+	}
+	findOptions := options.Find()
+	if query.Limit > 0 {
+		findOptions.SetLimit(int64(query.Limit))
+	}
+	findOptions.SetSort(bson.D{{"_id", 1}})
+	cur, err := o.transactionCollection.Find(context.TODO(), dbQuery, findOptions)
 	if err != nil {
 		return
 	}
@@ -44,13 +74,29 @@ func (o *transactionOrm) GetManyByOwnerId(ownerId primitive.ObjectID) (transacti
 	return
 }
 
-func (o *transactionOrm) GetOwnerIdsByIds(ids []primitive.ObjectID) (ownerIds []primitive.ObjectID, err error) {
+func (o *transactionOrm) GetSomeDescriptionsByPartialDescription(autocomplete *dt.TransactionDescriptionAutocomplete) (suggestions []*dt.TransactionDescriptionAutocompleteResponse, err error) {
+	cur, err := o.transactionCollection.Aggregate(context.TODO(), bson.A{
+		bson.D{{"$match", bson.D{{"description", bson.M{"$regex": fmt.Sprintf(".*%v.*", *autocomplete.Description), "$options": "i"}}}}},
+		bson.D{{"$group", bson.D{
+			{"_id", "$description"},
+		}}},
+		bson.D{{"$limit", autocomplete.Count}},
+	})
+	err = cur.All(context.TODO(), &suggestions)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (o *transactionOrm) GetUserIdsByIds(ids []primitive.ObjectID) (userIds []primitive.ObjectID, err error) {
 	var aggregateResult []map[string]primitive.ObjectID
-	ownerIds = make([]primitive.ObjectID, 0)
+	userIds = make([]primitive.ObjectID, 0)
 	cur, err := o.transactionCollection.Aggregate(context.TODO(), bson.A{
 		bson.D{{"$match", bson.D{{"_id", bson.D{{"$in", ids}}}}}},
 		bson.D{{"$group", bson.D{
-			{"_id", "$owner"},
+			{"_id", "$user"},
 		}}},
 	})
 	if err != nil {
@@ -61,8 +107,9 @@ func (o *transactionOrm) GetOwnerIdsByIds(ids []primitive.ObjectID) (ownerIds []
 		return
 	}
 	for _, elem := range aggregateResult {
-		ownerIds = append(ownerIds, elem["_id"])
+		userIds = append(userIds, elem["_id"])
 	}
+
 	return
 }
 
