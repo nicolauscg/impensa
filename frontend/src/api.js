@@ -21,6 +21,18 @@ export const urlRegister = () => ({
   type: RESPONSE_TYPE.OBJECT,
   manual: true
 });
+export const urlGetUser = userId => ({
+  url: `${baseUrl}/user/${userId}`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: false
+});
+export const urlUpdateUser = () => ({
+  url: `${baseUrl}/user`,
+  method: "PUT",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
 export const urlGetAllTransactions = () => ({
   url: `${baseUrl}/transaction`,
   method: "GET",

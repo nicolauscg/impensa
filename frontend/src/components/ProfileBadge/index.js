@@ -1,5 +1,4 @@
 import React from "react";
-import { getUserObject } from "../../auth";
 
 import { makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
@@ -16,6 +15,8 @@ import {
 } from "@material-ui/core";
 import { red } from "@material-ui/core/colors";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+
+import { getUserObject, clearUserObject } from "../../auth";
 
 const useStyles = makeStyles(theme => ({
   profileBadgeRoot: {
@@ -144,6 +145,14 @@ export default function ProfileBadge({ history }) {
                     }}
                   >
                     Profile
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      clearUserObject();
+                      history.push("/");
+                    }}
+                  >
+                    Logout
                   </MenuItem>
                 </MenuList>
               </ClickAwayListener>

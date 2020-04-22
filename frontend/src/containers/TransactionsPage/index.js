@@ -16,7 +16,7 @@ import {
 import DataTable, { DataTableFormatter } from "../../components/DataTable";
 import {
   cleanNilFromObject,
-  transformValuesToUpdatePayload
+  transformValuesToUpdateIdsPayload
 } from "../../ramdaHelpers";
 import CreateOrEditModal, {
   FormFields,
@@ -76,7 +76,7 @@ const TransactionsPage = () => {
           updateTransaction({
             data: R.pipe(
               cleanNilFromObject,
-              transformValuesToUpdatePayload
+              transformValuesToUpdateIdsPayload
             )(cleanedValues)
           }).then(() => {
             handleCloseNewTransactionModal();

@@ -12,7 +12,7 @@ import {
   urlCreateAccount
 } from "../../api";
 import DataTable from "../../components/DataTable";
-import { transformValuesToUpdatePayload } from "../../ramdaHelpers";
+import { transformValuesToUpdateIdsPayload } from "../../ramdaHelpers";
 import CreateOrEditModal, {
   FormFields,
   FormTypes
@@ -50,7 +50,7 @@ export default function AccountsPage() {
           break;
         case FormTypes.UPDATE:
           updateAccount({
-            data: transformValuesToUpdatePayload(values)
+            data: transformValuesToUpdateIdsPayload(values)
           }).then(() => {
             handleCloseNewAccountModal();
             refetchAccounts();

@@ -4,7 +4,7 @@ import AppBar from "@material-ui/core/AppBar";
 import { makeStyles } from "@material-ui/core/styles";
 import { Toolbar, Typography, Button } from "@material-ui/core";
 
-import { isLoggedIn, clearUserObject } from "../../auth";
+import { isLoggedIn } from "../../auth";
 
 const useStyles = makeStyles({
   buttonOutlinedPrimary: {
@@ -24,14 +24,6 @@ const Navbar = props => {
       name: "register",
       action: ({ history }) => () => history.push("/auth"),
       authorized: false
-    },
-    {
-      name: "logout",
-      action: ({ history }) => () => {
-        clearUserObject();
-        history.push("/");
-      },
-      authorized: true
     },
     {
       name: "transactions",

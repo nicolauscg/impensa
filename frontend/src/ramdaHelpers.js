@@ -12,7 +12,37 @@ export const cleanNilFromObject = R.pickBy(
   )
 );
 
-export const transformValuesToUpdatePayload = values => ({
-  ids: Array.of(values.id),
-  update: values
-});
+export const cleanEmptyFromObject = R.pickBy(
+  R.pipe(
+    R.isEmpty,
+    R.not
+  )
+);
+
+export const transformValuesToUpdateIdsPayload = values => {
+  // eslint-disable-next-line no-unused-vars
+  const { id, ...valuesWithoutId } = values;
+
+  return {
+    ids: Array.of(values.id),
+    update: valuesWithoutId
+  };
+};
+
+export const transformValuesToUpdateIdPayload = values => {
+  // eslint-disable-next-line no-unused-vars
+  const { id, ...valuesWithoutId } = values;
+
+  return {
+    id: values.id,
+    update: valuesWithoutId
+  };
+};
+
+export const pngImagetoBase64 = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
