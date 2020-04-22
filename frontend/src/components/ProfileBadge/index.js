@@ -122,6 +122,9 @@ export default function ProfileBadge({ history }) {
         role={undefined}
         transition
         disablePortal
+        style={{
+          zIndex: 150
+        }}
       >
         {({ TransitionProps, placement }) => (
           <Grow
