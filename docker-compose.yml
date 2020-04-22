@@ -1,7 +1,7 @@
 version: "3.1"
 services:
   backend:
-    image: nicolausc/impensa-be:1.0
+    image: nicolausc/impensa-be-dev:latest
     restart: always
     ports:
       - "8080:8080"
@@ -14,12 +14,10 @@ services:
       - ./.env:/app/.env
 
   frontend:
-    image: nicolausc/impensa-fe:1.0
+    image: nicolausc/impensa-fe-dev:latest
     restart: always
     ports:
       - "3000:80"
-    volumes:
-      - ./frontend/.env:/var/www/.env
   
   nginx:
     image: nginx:1.17-alpine

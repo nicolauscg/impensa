@@ -1,1 +1,1 @@
-sudo docker-compose down && sudo docker-compose pull -q backend && sudo docker-compose pull -q frontend && sudo docker-compose up -d --remove-orphans
+sudo docker-compose down --rmi all && sudo docker-compose up -d --force-recreate --remove-orphans
