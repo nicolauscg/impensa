@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as R from "ramda";
 
@@ -13,7 +13,9 @@ import {
   urlUpdateTransaction,
   urlDeleteTransaction
 } from "../../api";
-import DataTable, { DataTableFormatter } from "../../components/DataTable";
+import MuiDataTable, {
+  DataTableFormatter
+} from "../../components/MuiDataTable";
 import {
   cleanNilFromObject,
   transformValuesToUpdateIdsPayload
@@ -38,11 +40,40 @@ const TransactionsPage = () => {
   );
   const [modalData, setModalData] = useState(initialModalData);
   const [modalMode, setModalMode] = useState(FormTypes.CREATE);
+  const [infiniteScrollData, setInfiniteScrollData] = useState([]);
+  const [scrollHasNext, setScrollHasNext] = useState(false);
+  const [scrollNextUrl, setScrollNextUrl] = useState(null);
 
   const [
-    { data: transactionsData, loading: transactionsLoading },
-    refetchTransactions
+    {
+      data: transactionsData,
+      loading: transactionsLoading,
+      paging: transactionPaging
+    },
+    refetchTransactionsFromAxios
   ] = useAxiosSafely(urlGetAllTransactions());
+
+  useEffect(() => {
+    if (transactionsData && transactionPaging.nextUrl !== scrollNextUrl) {
+      setInfiniteScrollData(infiniteScrollData.concat(transactionsData));
+    }
+    if (transactionPaging) {
+      setScrollHasNext(transactionPaging.hasNext);
+      setScrollNextUrl(transactionPaging.nextUrl);
+    }
+  }, [transactionsData]);
+
+  const loadMoreTransactions = () => {
+    refetchTransactionsFromAxios({ url: scrollNextUrl });
+  };
+
+  const refetchTransactions = (...args) => {
+    setInfiniteScrollData([]);
+    setScrollHasNext(null);
+    setScrollNextUrl(null);
+    refetchTransactionsFromAxios(...args);
+  };
+
   const [{ data: accountsData, loading: accountsLoading }] = useAxiosSafely(
     urlGetAllAccounts()
   );
@@ -100,15 +131,26 @@ const TransactionsPage = () => {
     resetModalData();
     handleOpenNewTransactionModal();
   };
+  const handleOnSearch = queryString => {
+    refetchTransactions({
+      params: {
+        description: queryString
+      }
+    });
+  };
   const handleOnEdit = data => {
     setModalMode(FormTypes.UPDATE);
     setModalData(data);
     handleOpenNewTransactionModal();
   };
-  const handleOnDelete = data => {
-    deleteTransaction({ data: { ids: Array.of(data.id) } }).then(() =>
-      refetchTransactions()
-    );
+  const handleOnDelete = ids => {
+    deleteTransaction({ data: { ids } })
+      .then(() => {
+        refetchTransactions();
+
+        return true;
+      })
+      .catch(() => false);
   };
 
   const loading = transactionsLoading || accountsLoading || categoriesLoading;
@@ -150,25 +192,83 @@ const TransactionsPage = () => {
     ]
   };
   const transactionDataTableProps = {
-    headerNames: ["Date", "Description", "Category", "Account", "Amount"],
-    dataFormatters: [
-      DataTableFormatter.formatDateFrom(R.prop("dateTime")),
-      R.prop("description"),
-      DataTableFormatter.mapFromLookup(
+    headerNames: [
+      {
+        name: "dateTime",
+        label: "Date",
+        options: {
+          filter: false,
+          sort: false
+        }
+      },
+      {
+        name: "description",
+        label: "Description",
+        options: {
+          filter: false,
+          sort: false
+        }
+      },
+      {
+        name: "category",
+        label: "Category",
+        options: {
+          filter: true,
+          sort: false,
+          filterType: "checkbox",
+          filterOptions: {
+            names: categoriesData.map(row => row.name)
+          }
+        }
+      },
+      {
+        name: "account",
+        label: "Account",
+        options: {
+          filter: true,
+          display: "true",
+          sort: false,
+          filterType: "checkbox",
+          filterOptions: {
+            names: accountsData.map(row => row.name)
+          }
+        }
+      },
+      {
+        name: "amount",
+        label: "Amount",
+        options: {
+          filter: false,
+          sort: false
+        }
+      }
+    ],
+    dataFormatters: {
+      dateTime: DataTableFormatter.formatDateFrom(R.prop("dateTime")),
+      description: R.prop("description"),
+      category: DataTableFormatter.mapFromLookup(
         R.prop("category"),
         categoriesData,
         R.prop("name")
       ),
-      DataTableFormatter.mapFromLookup(
+      account: DataTableFormatter.mapFromLookup(
         R.prop("account"),
         accountsData,
         R.prop("name")
       ),
-      R.prop("amount")
-    ],
-    data: transactionsData,
+      amount: R.prop("amount")
+    },
+    data: infiniteScrollData,
     onEdit: handleOnEdit,
-    onDelete: handleOnDelete
+    onDelete: handleOnDelete,
+    categoriesData,
+    onSearch: handleOnSearch,
+    onLoadMore: () => {
+      if (!loading && scrollHasNext) {
+        loadMoreTransactions();
+      }
+    },
+    hasMore: true
   };
 
   return (
@@ -187,7 +287,7 @@ const TransactionsPage = () => {
         </Button>
       </Box>
       <CreateOrEditModal {...createOrEditTransactionModalProps} />
-      <DataTable {...transactionDataTableProps} />
+      <MuiDataTable {...transactionDataTableProps} />
     </>
   );
 };

@@ -70,7 +70,7 @@ func (o *TransactionController) GetAllTransactions(
 	afterCursor *string,
 ) {
 	var accountObjectId, categoryObjectId, afterCursorObjectId *primitive.ObjectID = nil, nil, nil
-	limitPlusOne := 6 + 1 // to check hasNext with cursor based pagination
+	limitPlusOne := 20 + 1 // to check hasNext with cursor based pagination
 	if account != nil {
 		tmp, _ := primitive.ObjectIDFromHex(*account)
 		accountObjectId = &tmp

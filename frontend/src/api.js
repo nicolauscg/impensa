@@ -114,6 +114,7 @@ export const urlDeleteCategory = () => ({
 export const useAxiosSafely = requestInfo => {
   const { type, manual, ...rest } = requestInfo;
   const defaultWrappedData = type === RESPONSE_TYPE.OBJECT ? {} : [];
+  const [wrappedPaging, setWrappedPaging] = useState({});
   const [wrappedData, setWrappedData] = useState(defaultWrappedData);
   const [wrappedError, setWrappedError] = useState({});
 
@@ -128,7 +129,11 @@ export const useAxiosSafely = requestInfo => {
     } else {
       setWrappedData(defaultWrappedData);
     }
-
+    if (R.hasPath(["paging"], data)) {
+      setWrappedPaging(data.paging);
+    } else {
+      setWrappedPaging({});
+    }
     if (R.hasPath(["response", "data", "error"], error)) {
       // caught error
       setWrappedError(error.response.data.error);
@@ -151,6 +156,7 @@ export const useAxiosSafely = requestInfo => {
   return [
     {
       data: wrappedData,
+      paging: wrappedPaging,
       loading,
       error: wrappedError,
       response
