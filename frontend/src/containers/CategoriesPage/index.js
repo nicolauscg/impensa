@@ -41,13 +41,14 @@ export default function CategoriesPage() {
   const formikCategory = useFormik({
     initialValues: modalData,
     enableReinitialize: true,
-    onSubmit: values => {
+    onSubmit: (values, formikBag) => {
       switch (modalMode) {
         case FormTypes.CREATE:
           createCategory({
             data: values
           }).then(() => {
             handleCloseNewCategoryModal();
+            formikBag.resetForm();
             refetchCategories();
           });
           break;

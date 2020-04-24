@@ -41,13 +41,14 @@ export default function AccountsPage() {
   const formikAccount = useFormik({
     initialValues: modalData,
     enableReinitialize: true,
-    onSubmit: values => {
+    onSubmit: (values, formikBag) => {
       switch (modalMode) {
         case FormTypes.CREATE:
           createAccount({
             data: values
           }).then(() => {
             handleCloseNewAccountModal();
+            formikBag.resetForm();
             refetchAccounts();
           });
           break;
