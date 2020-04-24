@@ -163,7 +163,8 @@ const TransactionsPage = () => {
 
   const loading = transactionsLoading || accountsLoading || categoriesLoading;
   const createOrEditTransactionModalProps = {
-    title: "New Transaction",
+    title:
+      modalMode === FormTypes.CREATE ? "New Transaction" : "Edit Transaction",
     data: modalData,
     loading,
     isOpen: newTransactionModelIsOpen,

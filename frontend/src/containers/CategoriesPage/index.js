@@ -88,7 +88,7 @@ export default function CategoriesPage() {
 
   const loading = categoriesLoading;
   const createOrEditCategoryModalProps = {
-    title: "New Category",
+    title: modalMode === FormTypes.CREATE ? "New Category" : "Edit Category",
     data: modalData,
     loading,
     isOpen: newCategoryModelIsOpen,

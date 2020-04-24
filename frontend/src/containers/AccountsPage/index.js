@@ -88,7 +88,7 @@ export default function AccountsPage() {
 
   const loading = accountsLoading;
   const createOrEditAccountModalProps = {
-    title: "New Account",
+    title: modalMode === FormTypes.CREATE ? "New Account" : "Edit Account",
     data: modalData,
     loading,
     isOpen: newAccountModelIsOpen,
