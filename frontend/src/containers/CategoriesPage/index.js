@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as R from "ramda";
 
@@ -31,6 +31,9 @@ export default function CategoriesPage() {
     { data: categoriesData, loading: categoriesLoading },
     refetchCategories
   ] = useAxiosSafely(urlGetAllCategories());
+  useEffect(() => {
+    refetchCategories();
+  }, []);
   const [, createCategory] = useAxiosSafely(urlCreateCategory());
   const [, updateCategory] = useAxiosSafely(urlUpdateCategory());
   const [, deleteCategory] = useAxiosSafely(urlDeleteCategory());

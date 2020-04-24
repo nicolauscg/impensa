@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as R from "ramda";
 
@@ -35,6 +35,9 @@ export default function AccountsPage() {
   const [, updateAccount] = useAxiosSafely(urlUpdateAccount());
   const [, deleteAccount] = useAxiosSafely(urlDeleteAccount());
 
+  useEffect(() => {
+    refetchAccounts();
+  }, []);
   const formikAccount = useFormik({
     initialValues: modalData,
     enableReinitialize: true,

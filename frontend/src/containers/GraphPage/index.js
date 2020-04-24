@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Chart } from "react-google-charts";
 import {
   useAxiosSafely,
@@ -7,13 +7,18 @@ import {
 } from "../../api";
 
 export default function GraphPage() {
-  const [{ data: categoryGraphData }] = useAxiosSafely(
-    urlGraphTransactionCategory()
-  );
-  const [{ data: accountGraphData }] = useAxiosSafely(
-    urlGraphTransactionAccount()
-  );
-
+  const [
+    { data: categoryGraphData },
+    fetchGraphTransactionCategory
+  ] = useAxiosSafely(urlGraphTransactionCategory());
+  const [
+    { data: accountGraphData },
+    fetchGraphTransactionAccount
+  ] = useAxiosSafely(urlGraphTransactionAccount());
+  useEffect(() => {
+    fetchGraphTransactionCategory();
+    fetchGraphTransactionAccount();
+  }, []);
   const formattedCategoryGraphData = [["Category", "Amount"]].concat(
     categoryGraphData.map(pieChartSliceData => [
       pieChartSliceData.label,

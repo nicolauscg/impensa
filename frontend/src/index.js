@@ -6,6 +6,7 @@ import { ConnectedRouter } from "connected-react-router";
 import { configure } from "axios-hooks";
 import LRU from "lru-cache";
 import Axios from "axios";
+import * as R from "ramda";
 
 import "./index.css";
 import "normalize.css";
@@ -38,7 +39,7 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   response => response,
   error => {
-    const statusCode = error.response.status;
+    const statusCode = R.path(["response", "status"], error);
 
     if (statusCode === 401) {
       clearUserObject();
