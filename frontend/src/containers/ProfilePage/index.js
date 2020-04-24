@@ -49,12 +49,15 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function ProfilePage({ history }) {
+export default function ProfilePage() {
   const classes = useStyles();
   const username = getUserObject().username;
   const userId = getUserObject().id;
 
-  const [{ data: userData }] = useAxiosSafely(urlGetUser(userId));
+  const [{ data: userData }, fetchUser] = useAxiosSafely(urlGetUser(userId));
+  useEffect(() => {
+    fetchUser();
+  }, []);
   const [, updateUser] = useAxiosSafely(urlUpdateUser());
   const formikUser = useFormik({
     initialValues: {
@@ -75,7 +78,7 @@ export default function ProfilePage({ history }) {
         .then(() => {
           formikBag.setFieldValue("oldPassword", null);
           formikBag.setFieldValue("newPassword", null);
-          history.push("/profile");
+          fetchUser();
         })
         .catch(err => {
           const errorMessage = err.response.data.error.message;
@@ -89,8 +92,8 @@ export default function ProfilePage({ history }) {
   useEffect(() => {
     formikUser.setValues({
       ...userData,
-      oldPassword: "",
-      newPassword: ""
+      oldPassword: null,
+      newPassword: null
     });
   }, [userData]);
 

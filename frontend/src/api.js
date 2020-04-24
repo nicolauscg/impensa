@@ -25,7 +25,7 @@ export const urlGetUser = userId => ({
   url: `${baseUrl}/user/${userId}`,
   method: "GET",
   type: RESPONSE_TYPE.OBJECT,
-  manual: false
+  manual: true
 });
 export const urlUpdateUser = () => ({
   url: `${baseUrl}/user`,
