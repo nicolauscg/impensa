@@ -26,8 +26,7 @@ const AuthPage = ({ history }) => {
         postLogin({
           data: values
         })
-          .then(result => {
-            localStorage.impensa = JSON.stringify(result.data.data);
+          .then(() => {
             history.push("/");
           })
           .catch(err => {
@@ -49,8 +48,7 @@ const AuthPage = ({ history }) => {
       onSubmit: values => {
         postRegister({
           data: values
-        }).then(result => {
-          localStorage.impensa = JSON.stringify(result.data.data);
+        }).then(() => {
           history.push("/");
         });
       }
