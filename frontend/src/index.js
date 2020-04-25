@@ -6,12 +6,13 @@ import { ConnectedRouter } from "connected-react-router";
 import { configure } from "axios-hooks";
 import LRU from "lru-cache";
 import Axios from "axios";
+import * as R from "ramda";
 
 import "./index.css";
 import "normalize.css";
 import App from "./containers/App";
 import * as serviceWorker from "./serviceWorker";
-import { clearUserObject } from "./auth";
+import { clearUserObject, isLoggedIn, getUserObject } from "./auth";
 
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import MomentUtils from "@date-io/moment";
@@ -22,13 +23,11 @@ const axios = Axios.create({ withCredentials: true });
 const cache = new LRU({ max: 10 });
 axios.interceptors.request.use(
   config => {
-    try {
-      const userData = JSON.parse(localStorage.impensa);
-      if (userData.token) {
-        config.headers.Authorization = `Bearer ${userData.token}`;
-      }
-    } catch (err) {
-      localStorage.removeItem("impensa");
+    if (isLoggedIn()) {
+      const userObject = getUserObject();
+      config.headers.Authorization = `Bearer ${userObject.token}`;
+    } else {
+      clearUserObject();
     }
 
     return config;
@@ -38,7 +37,7 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   response => response,
   error => {
-    const statusCode = error.response.status;
+    const statusCode = R.path(["response", "status"], error);
 
     if (statusCode === 401) {
       clearUserObject();

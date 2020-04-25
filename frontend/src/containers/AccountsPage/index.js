@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as R from "ramda";
 
@@ -35,16 +35,20 @@ export default function AccountsPage() {
   const [, updateAccount] = useAxiosSafely(urlUpdateAccount());
   const [, deleteAccount] = useAxiosSafely(urlDeleteAccount());
 
+  useEffect(() => {
+    refetchAccounts();
+  }, []);
   const formikAccount = useFormik({
     initialValues: modalData,
     enableReinitialize: true,
-    onSubmit: values => {
+    onSubmit: (values, formikBag) => {
       switch (modalMode) {
         case FormTypes.CREATE:
           createAccount({
             data: values
           }).then(() => {
             handleCloseNewAccountModal();
+            formikBag.resetForm();
             refetchAccounts();
           });
           break;
@@ -85,7 +89,7 @@ export default function AccountsPage() {
 
   const loading = accountsLoading;
   const createOrEditAccountModalProps = {
-    title: "New Account",
+    title: modalMode === FormTypes.CREATE ? "New Account" : "Edit Account",
     data: modalData,
     loading,
     isOpen: newAccountModelIsOpen,

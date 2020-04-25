@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 
 import { makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
@@ -17,6 +17,7 @@ import { red } from "@material-ui/core/colors";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 import { getUserObject, clearUserObject } from "../../auth";
+import { UserContext } from "../../containers/App/index";
 
 const useStyles = makeStyles(theme => ({
   profileBadgeRoot: {
@@ -52,6 +53,7 @@ const useStyles = makeStyles(theme => ({
 export default function ProfileBadge({ history }) {
   const username = getUserObject().username;
   const classes = useStyles();
+  const { data: userData } = useContext(UserContext);
 
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef(null);
@@ -93,9 +95,16 @@ export default function ProfileBadge({ history }) {
           action: classes.cardHeaderAction
         }}
         avatar={
-          <Avatar aria-label="recipe" className={classes.avatar}>
-            {username[0]}
-          </Avatar>
+          <Avatar
+            aria-label="recipe"
+            className={classes.avatar}
+            alt={userData.username}
+            src={
+              userData.picture
+                ? `data:image/png;base64,${userData.picture}`
+                : null
+            }
+          />
         }
         action={
           <IconButton
@@ -112,7 +121,7 @@ export default function ProfileBadge({ history }) {
           </IconButton>
         }
         className={classes.cardHeader}
-        title={`${username.substring(0, 10)}${
+        title={`${userData.username.substring(0, 10)}${
           username.length > 10 ? "..." : ""
         }`}
       />

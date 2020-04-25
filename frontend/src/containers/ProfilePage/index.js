@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useCallback, useContext } from "react";
 import { useFormik } from "formik";
 import { useDropzone } from "react-dropzone";
 import * as R from "ramda";
@@ -12,13 +12,13 @@ import {
 } from "@material-ui/core";
 
 import { makeStyles } from "@material-ui/core/styles";
-import { getUserObject } from "../../auth";
-import { useAxiosSafely, urlGetUser, urlUpdateUser } from "../../api";
+import { useAxiosSafely, urlUpdateUser } from "../../api";
 import {
   cleanEmptyFromObject,
   transformValuesToUpdateIdPayload,
   pngImagetoBase64
 } from "../../ramdaHelpers";
+import { UserContext } from "../../containers/App/index";
 
 const useStyles = makeStyles(theme => ({
   pictureField: {
@@ -49,20 +49,18 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function ProfilePage({ history }) {
+export default function ProfilePage() {
   const classes = useStyles();
-  const username = getUserObject().username;
-  const userId = getUserObject().id;
 
-  const [{ data: userData }] = useAxiosSafely(urlGetUser(userId));
+  const { data: userData, refreshUserContext } = useContext(UserContext);
+  const username = userData.username;
+
   const [, updateUser] = useAxiosSafely(urlUpdateUser());
   const formikUser = useFormik({
     initialValues: {
-      email: "",
-      username: "",
-      picture: null,
-      oldPassword: null,
-      newPassword: null
+      ...userData,
+      oldPassword: "",
+      newPassword: ""
     },
     enableReinitialize: true,
     onSubmit: (values, formikBag) => {
@@ -73,9 +71,8 @@ export default function ProfilePage({ history }) {
         )(values)
       })
         .then(() => {
-          formikBag.setFieldValue("oldPassword", null);
-          formikBag.setFieldValue("newPassword", null);
-          history.push("/profile");
+          refreshUserContext();
+          formikBag.resetForm();
         })
         .catch(err => {
           const errorMessage = err.response.data.error.message;
@@ -85,14 +82,6 @@ export default function ProfilePage({ history }) {
         });
     }
   });
-
-  useEffect(() => {
-    formikUser.setValues({
-      ...userData,
-      oldPassword: "",
-      newPassword: ""
-    });
-  }, [userData]);
 
   const onDrop = useCallback(async acceptedFiles => {
     formikUser.setFieldValue(

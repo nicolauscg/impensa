@@ -74,12 +74,20 @@ const TransactionsPage = () => {
     refetchTransactionsFromAxios(...args);
   };
 
-  const [{ data: accountsData, loading: accountsLoading }] = useAxiosSafely(
-    urlGetAllAccounts()
-  );
-  const [{ data: categoriesData, loading: categoriesLoading }] = useAxiosSafely(
-    urlGetAllCategories()
-  );
+  const [
+    { data: accountsData, loading: accountsLoading },
+    fetchAccounts
+  ] = useAxiosSafely(urlGetAllAccounts());
+  const [
+    { data: categoriesData, loading: categoriesLoading },
+    fetchCategories
+  ] = useAxiosSafely(urlGetAllCategories());
+
+  useEffect(() => {
+    refetchTransactionsFromAxios();
+    fetchAccounts();
+    fetchCategories();
+  }, []);
   const [, createTransaction] = useAxiosSafely(urlCreateTransaction());
   const [, updateTransaction] = useAxiosSafely(urlUpdateTransaction());
   const [, deleteTransaction] = useAxiosSafely(urlDeleteTransaction());
@@ -155,7 +163,8 @@ const TransactionsPage = () => {
 
   const loading = transactionsLoading || accountsLoading || categoriesLoading;
   const createOrEditTransactionModalProps = {
-    title: "New Transaction",
+    title:
+      modalMode === FormTypes.CREATE ? "New Transaction" : "Edit Transaction",
     data: modalData,
     loading,
     isOpen: newTransactionModelIsOpen,

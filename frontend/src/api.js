@@ -25,7 +25,7 @@ export const urlGetUser = userId => ({
   url: `${baseUrl}/user/${userId}`,
   method: "GET",
   type: RESPONSE_TYPE.OBJECT,
-  manual: false
+  manual: true
 });
 export const urlUpdateUser = () => ({
   url: `${baseUrl}/user`,
@@ -37,7 +37,7 @@ export const urlGetAllTransactions = () => ({
   url: `${baseUrl}/transaction`,
   method: "GET",
   type: RESPONSE_TYPE.ARRAY,
-  manual: false
+  manual: true
 });
 export const urlCreateTransaction = () => ({
   url: `${baseUrl}/transaction`,
@@ -61,7 +61,7 @@ export const urlGetAllAccounts = () => ({
   url: `${baseUrl}/account`,
   method: "GET",
   type: RESPONSE_TYPE.ARRAY,
-  manual: false
+  manual: true
 });
 export const urlCreateAccount = () => ({
   url: `${baseUrl}/account`,
@@ -85,7 +85,7 @@ export const urlGetAllCategories = () => ({
   url: `${baseUrl}/category`,
   method: "GET",
   type: RESPONSE_TYPE.ARRAY,
-  manual: false
+  manual: true
 });
 export const urlCreateCategory = () => ({
   url: `${baseUrl}/category`,
@@ -109,13 +109,13 @@ export const urlGraphTransactionCategory = () => ({
   url: `${baseUrl}/graph/transaction/category`,
   method: "GET",
   type: RESPONSE_TYPE.ARRAY,
-  manual: false
+  manual: true
 });
 export const urlGraphTransactionAccount = () => ({
   url: `${baseUrl}/graph/transaction/account`,
   method: "GET",
   type: RESPONSE_TYPE.ARRAY,
-  manual: false
+  manual: true
 });
 
 /*
