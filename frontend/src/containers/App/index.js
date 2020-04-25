@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Switch, Route, withRouter, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { ThemeProvider } from "styled-components";
-import { isLoggedIn } from "../../auth";
+import { isLoggedIn, getUserObject } from "../../auth";
 import Navbar from "../../components/Navbar";
 import Grid from "@material-ui/core/Grid";
 import Container from "@material-ui/core/Container";
@@ -11,6 +11,7 @@ import Container from "@material-ui/core/Container";
 import { theme } from "./theme";
 import { routes } from "./routes";
 import ProfileBadge from "../../components/ProfileBadge";
+import { useAxiosSafely, urlGetUser } from "../../api";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -21,6 +22,8 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
+export const UserContext = React.createContext(null);
+
 export const App = ({ history }) => {
   const pages = routes.map((route, index) =>
     route.protected ? (
@@ -30,31 +33,54 @@ export const App = ({ history }) => {
     )
   );
   const classes = useStyles();
+  const [userInfo, setUserInfo] = useState({});
+  const [, fetchUser] = useAxiosSafely(urlGetUser());
+
+  const refreshUserContext = () => {
+    if (isLoggedIn()) {
+      fetchUser({ url: urlGetUser(getUserObject().id).url }).then(res => {
+        setUserInfo(res.data.data);
+      });
+    } else {
+      setUserInfo({});
+    }
+  };
+
+  useEffect(() => {
+    refreshUserContext();
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
-      <Grid container className={classes.root}>
-        {isLoggedIn() ? (
-          <>
-            <Grid container item xs={2} direction={"column"}>
-              <Navbar history={history} />
-            </Grid>
-            <Grid container item xs={10} className="py-4">
-              <Container
-                fixed={true}
-                className={`d-flex flex-column ${classes.container}`}
-              >
-                <ProfileBadge history={history} />
-                <Switch>{pages}</Switch>
-              </Container>
-            </Grid>
-          </>
-        ) : (
-          <Container fixed={true} className="d-flex flex-column">
-            <Switch>{pages}</Switch>
-          </Container>
-        )}
-      </Grid>
+      <UserContext.Provider
+        value={{
+          data: userInfo,
+          refreshUserContext
+        }}
+      >
+        <Grid container className={classes.root}>
+          {isLoggedIn() ? (
+            <>
+              <Grid container item xs={2} direction={"column"}>
+                <Navbar history={history} />
+              </Grid>
+              <Grid container item xs={10} className="py-4">
+                <Container
+                  fixed={true}
+                  className={`d-flex flex-column ${classes.container}`}
+                >
+                  <ProfileBadge history={history} />
+                  <Switch>{pages}</Switch>
+                </Container>
+              </Grid>
+            </>
+          ) : (
+            <Container fixed={true} className="d-flex flex-column">
+              <Switch>{pages}</Switch>
+            </Container>
+          )}
+        </Grid>
+      </UserContext.Provider>
     </ThemeProvider>
   );
 };
