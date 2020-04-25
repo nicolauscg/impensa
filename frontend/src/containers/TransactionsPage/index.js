@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as R from "ramda";
+import { throttle } from "lodash";
 
 import { Button, Typography, Box } from "@material-ui/core";
 
@@ -160,6 +161,15 @@ const TransactionsPage = () => {
       })
       .catch(() => false);
   };
+  const handleOnLoad = throttle(() => {
+    if (!loading && scrollHasNext && infiniteScrollData.length > 0) {
+      loadMoreTransactions();
+    }
+  }, 250);
+  const throttledAndCancel = () => {
+    handleOnLoad.cancel();
+    handleOnLoad();
+  };
 
   const loading = transactionsLoading || accountsLoading || categoriesLoading;
   const createOrEditTransactionModalProps = {
@@ -272,11 +282,7 @@ const TransactionsPage = () => {
     onDelete: handleOnDelete,
     categoriesData,
     onSearch: handleOnSearch,
-    onLoadMore: () => {
-      if (!loading && scrollHasNext) {
-        loadMoreTransactions();
-      }
-    },
+    onLoadMore: throttledAndCancel,
     hasMore: true
   };
 
