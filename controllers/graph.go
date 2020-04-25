@@ -31,7 +31,9 @@ func (o *GraphController) GetTransactionCategorySummary() {
 	pieChartSliceInfos := make([]dt.PieChartSliceInfo, 0)
 
 	for _, transaction := range transactions {
-		categoryIdToAmountMap[*transaction.Category] += *transaction.Amount
+		if transaction.Category != nil {
+			categoryIdToAmountMap[*transaction.Category] += *transaction.Amount //here
+		}
 	}
 	for _, category := range categories {
 		categoryIdToCategoryName[*category.Id] = *category.Name
@@ -64,7 +66,9 @@ func (o *GraphController) GetTransactionAccountSummary() {
 	pieChartSliceInfos := make([]dt.PieChartSliceInfo, 0)
 
 	for _, transaction := range transactions {
-		accountIdToAmountMap[*transaction.Account] += *transaction.Amount
+		if transaction.Account != nil {
+			accountIdToAmountMap[*transaction.Account] += *transaction.Amount //here
+		}
 	}
 	for _, account := range accounts {
 		accountIdToAccountName[*account.Id] = *account.Name
