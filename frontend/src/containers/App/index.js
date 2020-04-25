@@ -33,16 +33,23 @@ export const App = ({ history }) => {
     )
   );
   const classes = useStyles();
-  const [userInfo, setUserInfo] = useState({});
+  const initialUserInfo = {
+    username: "",
+    picture: "",
+    email: ""
+  };
+  const [userInfo, setUserInfo] = useState(initialUserInfo);
   const [, fetchUser] = useAxiosSafely(urlGetUser());
 
   const refreshUserContext = () => {
     if (isLoggedIn()) {
       fetchUser({ url: urlGetUser(getUserObject().id).url }).then(res => {
-        setUserInfo(res.data.data);
+        // eslint-disable-next-line no-unused-vars
+        const { token, ...rest } = res.data.data;
+        setUserInfo(rest);
       });
     } else {
-      setUserInfo({});
+      setUserInfo(initialUserInfo);
     }
   };
 
