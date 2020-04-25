@@ -13,3 +13,7 @@ An expense tracker app for University of Queensland INFS3202 Web Information Sys
 | :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Database   | [Atlas](https://www.mongodb.com/cloud/atlas), a cloud MongoDB service                                                                                                                |
 | Deployment | Automatic CI/CD pipeline with [GitLab CI](https://docs.gitlab.com/ee/ci/) and [Docker Compose](https://docs.docker.com/compose/) to [AWS EC2](https://aws.amazon.com/ec2/) instance. |
+
+## License
+
+The files included in this repository are licensed under the MIT license.
