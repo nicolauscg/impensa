@@ -33,7 +33,8 @@ const TransactionsPage = () => {
     dateTime: new Date(),
     account: null,
     category: null,
-    picture: null
+    picture: null,
+    location: ""
   };
 
   const [newTransactionModelIsOpen, setNewTransactionModelIsOpen] = useState(
@@ -207,6 +208,10 @@ const TransactionsPage = () => {
         name: "account",
         options: accountsData,
         optionDisplayer: R.prop("name")
+      }),
+      FormFields.placesAutocompleteField({
+        label: "Location",
+        name: "location"
       })
     ]
   };

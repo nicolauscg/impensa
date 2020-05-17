@@ -15,6 +15,8 @@ import {
 } from "@material-ui/core";
 import { KeyboardDatePicker } from "@material-ui/pickers";
 
+import PlacesAutocomplete from "../../components/PlacesAutocomplete";
+
 const useStyles = makeStyles(theme => ({
   box: {
     position: "absolute",
@@ -109,7 +111,15 @@ export const FormFields = {
         </Select>
       </FormControl>
     );
-  }
+  },
+  placesAutocompleteField: ({ label, name }) => formik => (
+    <PlacesAutocomplete
+      label={label}
+      name={name}
+      value={formik.values[name]}
+      handleValueChange={val => formik.setFieldValue(name, val)}
+    />
+  )
 };
 
 export default function CreateOrEditModal({
