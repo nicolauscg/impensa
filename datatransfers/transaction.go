@@ -16,6 +16,7 @@ type Transaction struct {
 	Description *string             `json:"description" bson:"description"`
 	DateTime    *time.Time          `json:"dateTime" bson:"dateTime"`
 	Picture     *string             `json:"picture" bson:"picture"`
+	Location    *string             `json:"location" bson:"location"`
 }
 
 func (t *Transaction) String() string {
@@ -30,6 +31,7 @@ type TransactionInsert struct {
 	Description *string             `json:"description,omitempty" bson:"description,omitempty"`
 	DateTime    *time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
 	Picture     *string             `json:"picture,omitempty" bson:"picture,omitempty"`
+	Location    *string             `json:"location" bson:"location"`
 }
 
 type TransactionQuery struct {
@@ -67,6 +69,7 @@ type TransactionUpdateFields struct {
 	Description *string             `json:"description,omitempty" bson:"description,omitempty"`
 	DateTime    *time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
 	Picture     *string             `json:"picture,omitempty" bson:"picture,omitempty"`
+	Location    *string             `json:"location" bson:"location"`
 }
 
 type TransactionDelete struct {
