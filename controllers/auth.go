@@ -68,6 +68,28 @@ func (o *AuthController) Login(credential dt.AuthLogin) {
 // @router /register [post]
 func (o *AuthController) Register(newUser dt.AuthRegister) {
 	newUser.Email = strings.ToLower(newUser.Email)
+
+	user, err := o.Handler.Orms.User.GetOneByEmail(newUser.Email)
+	if user != nil && err == nil {
+		o.ResponseBuilder.SetError(http.StatusConflict, constants.ErrorEmailAlreadyRegistered).ServeJSON()
+
+		return
+	} else if err != nil && err != mongo.ErrNoDocuments {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	user, err = o.Handler.Orms.User.GetOneByUsername(newUser.Username)
+	if user != nil && err == nil {
+		o.ResponseBuilder.SetError(http.StatusConflict, constants.ErrorUsernameAlreadyTaken).ServeJSON()
+
+		return
+	} else if err != nil && err != mongo.ErrNoDocuments {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+
 	newUserWithHashedPassword := newUser
 	hashedPassword, err := hashAndSalt(newUser.Password)
 	if err != nil {

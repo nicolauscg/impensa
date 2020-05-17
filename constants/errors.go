@@ -5,4 +5,6 @@ const (
 	ErrorIncorrectPassword           = "password is incorrect"
 	ErrorResourceForbiddenOrNotFound = "not authorized to access or missing resource"
 	ErrorOldPasswordMismatch         = "old password does not match"
+	ErrorEmailAlreadyRegistered      = "email already registered"
+	ErrorUsernameAlreadyTaken        = "username already taken"
 )

@@ -15,6 +15,7 @@ type UserOrmer interface {
 	GetOneById(id primitive.ObjectID) (*dt.UserItem, error)
 	GetOneWithPasswordById(id primitive.ObjectID) (*dt.User, error)
 	GetOneByEmail(email string) (*dt.User, error)
+	GetOneByUsername(username string) (*dt.User, error)
 	UpdateOneById(id primitive.ObjectID, update *dt.UserUpdateFieldsInModel) (*mongo.UpdateResult, error)
 	DeleteOneById(id primitive.ObjectID) (*mongo.DeleteResult, error)
 }
@@ -51,6 +52,15 @@ func (o *userOrm) GetOneWithPasswordById(id primitive.ObjectID) (user *dt.User, 
 
 func (o *userOrm) GetOneByEmail(email string) (user *dt.User, err error) {
 	err = o.userCollection.FindOne(context.TODO(), bson.D{{"email", email}}).Decode(&user)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (o *userOrm) GetOneByUsername(username string) (user *dt.User, err error) {
+	err = o.userCollection.FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&user)
 	if err != nil {
 		return
 	}
