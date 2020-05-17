@@ -144,24 +144,42 @@ const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
         </TabPanel>
         <TabPanel value={value} index={1} dir={theme.direction}>
           <form onSubmit={formikRegister.handleSubmit}>
-            <TextField
-              id="email"
-              label="email"
-              name="email"
-              type="email"
-              onChange={formikRegister.handleChange}
-              value={formikRegister.values.email}
+            <FormControl
               fullWidth={true}
-            />
-            <TextField
-              id="username"
-              label="username"
-              name="username"
-              type="text"
-              onChange={formikRegister.handleChange}
-              value={formikRegister.values.username}
+              error={R.hasPath(["email"], formikRegister.errors)}
+            >
+              <TextField
+                id="email"
+                label="email"
+                name="email"
+                type="email"
+                onChange={formikRegister.handleChange}
+                value={formikRegister.values.email}
+                fullWidth={true}
+                error={R.hasPath(["email"], formikRegister.errors)}
+              />
+              <FormHelperText id="my-helper-text">
+                {R.propOr("", "email", formikRegister.errors)}
+              </FormHelperText>
+            </FormControl>
+            <FormControl
               fullWidth={true}
-            />
+              error={R.hasPath(["email"], formikRegister.errors)}
+            >
+              <TextField
+                id="username"
+                label="username"
+                name="username"
+                type="text"
+                onChange={formikRegister.handleChange}
+                value={formikRegister.values.username}
+                fullWidth={true}
+                error={R.hasPath(["username"], formikRegister.errors)}
+              />
+              <FormHelperText id="my-helper-text">
+                {R.propOr("", "username", formikRegister.errors)}
+              </FormHelperText>
+            </FormControl>
             <TextField
               id="password"
               label="password"

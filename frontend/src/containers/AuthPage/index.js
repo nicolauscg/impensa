@@ -57,13 +57,30 @@ const AuthPage = ({ history }) => {
         username: "",
         password: ""
       },
-      onSubmit: values => {
+      onSubmit: (values, formikBag) => {
         postRegister({
           data: values
-        }).then(() => {
-          refreshUserContext();
-          history.push("/");
-        });
+        })
+          .then(() => {
+            refreshUserContext();
+            history.push("/");
+          })
+          .catch(err => {
+            const errorMessage = R.pathOr(
+              "",
+              ["response", "data", "error", "message"],
+              err
+            );
+            if (errorMessage.indexOf("email") !== -1) {
+              formikBag.setFieldError("email", errorMessage);
+            } else if (errorMessage.indexOf("username") !== -1) {
+              formikBag.setFieldError("username", errorMessage);
+            } else {
+              throw new Error(
+                "unrecognized error message response after register"
+              );
+            }
+          });
       }
     })
   };
