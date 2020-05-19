@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useFormik } from "formik";
 import * as R from "ramda";
 import { throttle } from "lodash";
 
-import { Button, Typography, Box } from "@material-ui/core";
+import { Button, Typography, Box, IconButton } from "@material-ui/core";
+import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
+import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 
 import {
   useAxiosSafely,
@@ -19,6 +21,7 @@ import MuiDataTable, {
 } from "../../components/MuiDataTable";
 import {
   cleanNilFromObject,
+  cleanEmptyFromObject,
   transformValuesToUpdateIdsPayload
 } from "../../ramdaHelpers";
 import CreateOrEditModal, {
@@ -26,14 +29,16 @@ import CreateOrEditModal, {
   FormTypes
 } from "../../components/CreateOrEditModal";
 
+const moment = require("moment");
+
 const TransactionsPage = () => {
   const initialModalData = {
     amount: 0,
     description: "",
     dateTime: new Date(),
-    account: null,
-    category: null,
-    picture: null,
+    account: "",
+    category: "",
+    picture: "",
     location: ""
   };
 
@@ -45,6 +50,20 @@ const TransactionsPage = () => {
   const [infiniteScrollData, setInfiniteScrollData] = useState([]);
   const [scrollHasNext, setScrollHasNext] = useState(false);
   const [scrollNextUrl, setScrollNextUrl] = useState(null);
+  const [currentMonthViewed, setMonthViewed] = useState(
+    moment().startOf("month")
+  );
+  const setNextMonth = () =>
+    setMonthViewed(currentMonthViewed.clone().add(1, "month"));
+  const setPreviousMonth = () =>
+    setMonthViewed(currentMonthViewed.clone().subtract(1, "month"));
+  const getStartOfCurrentMonthAsString = () =>
+    currentMonthViewed.format("YYYY-MM-DD");
+  const getEndOfCurrentMonthAsString = () =>
+    currentMonthViewed
+      .clone()
+      .endOf("month")
+      .format("YYYY-MM-DD");
 
   const [
     {
@@ -53,7 +72,14 @@ const TransactionsPage = () => {
       paging: transactionPaging
     },
     refetchTransactionsFromAxios
-  ] = useAxiosSafely(urlGetAllTransactions());
+  ] = useAxiosSafely(
+    urlGetAllTransactions({
+      params: {
+        dateTimeStart: getStartOfCurrentMonthAsString(),
+        dateTimeEnd: getEndOfCurrentMonthAsString()
+      }
+    })
+  );
 
   useEffect(() => {
     if (transactionsData && transactionPaging.nextUrl !== scrollNextUrl) {
@@ -66,14 +92,27 @@ const TransactionsPage = () => {
   }, [transactionsData]);
 
   const loadMoreTransactions = () => {
-    refetchTransactionsFromAxios({ url: scrollNextUrl });
+    refetchTransactionsFromAxios({
+      url: scrollNextUrl,
+      params: {
+        dateTimeStart: getStartOfCurrentMonthAsString(),
+        dateTimeEnd: getEndOfCurrentMonthAsString()
+      }
+    });
   };
 
-  const refetchTransactions = (...args) => {
+  const refetchTransactions = args => {
+    const test = R.mergeDeepRight(args, {
+      params: {
+        dateTimeStart: getStartOfCurrentMonthAsString(),
+        dateTimeEnd: getEndOfCurrentMonthAsString()
+      }
+    });
+
     setInfiniteScrollData([]);
     setScrollHasNext(null);
     setScrollNextUrl(null);
-    refetchTransactionsFromAxios(...args);
+    refetchTransactionsFromAxios(test);
   };
 
   const [
@@ -86,10 +125,25 @@ const TransactionsPage = () => {
   ] = useAxiosSafely(urlGetAllCategories());
 
   useEffect(() => {
-    refetchTransactionsFromAxios();
+    refetchTransactionsFromAxios({
+      params: {
+        dateTimeStart: getStartOfCurrentMonthAsString(),
+        dateTimeEnd: getEndOfCurrentMonthAsString()
+      }
+    });
     fetchAccounts();
     fetchCategories();
   }, []);
+
+  const isFirstRun = useRef(true);
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+    } else {
+      refetchTransactions();
+    }
+  }, [currentMonthViewed]);
+
   const [, createTransaction] = useAxiosSafely(urlCreateTransaction());
   const [, updateTransaction] = useAxiosSafely(urlUpdateTransaction());
   const [, deleteTransaction] = useAxiosSafely(urlDeleteTransaction());
@@ -98,12 +152,12 @@ const TransactionsPage = () => {
     initialValues: modalData,
     enableReinitialize: true,
     onSubmit: values => {
-      const cleanedValues = R.evolve(
-        {
+      const cleanedValues = R.pipe(
+        R.evolve({
           amount: R.ifElse(R.isEmpty, R.always(0), R.identity)
-        },
-        values
-      );
+        }),
+        cleanEmptyFromObject
+      )(values);
       switch (modalMode) {
         case FormTypes.CREATE:
           createTransaction({
@@ -306,6 +360,15 @@ const TransactionsPage = () => {
           Add transaction
         </Button>
       </Box>
+      <div className="d-flex flex-row justify-content-center align-items-center">
+        <IconButton className="mr-3" onClick={setPreviousMonth}>
+          <KeyboardArrowLeftIcon fontSize="large" />
+        </IconButton>
+        <Typography>{currentMonthViewed.format("MMM YYYY")}</Typography>
+        <IconButton className="ml-3" onClick={setNextMonth}>
+          <KeyboardArrowRightIcon fontSize="large" />
+        </IconButton>
+      </div>
       <CreateOrEditModal {...createOrEditTransactionModalProps} />
       <MuiDataTable {...transactionDataTableProps} />
     </>
