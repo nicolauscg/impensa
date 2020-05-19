@@ -57,6 +57,92 @@ func (o *TransactionController) GetTransaction(id string) {
 // @Param dateTimeEnd  query  time.Time false  "dateTimeEnd"
 // @Param limit  query  int false  "limit"
 // @Param afterCursor  query  string false  "afterCursor"
+// @router /table [get]
+func (o *TransactionController) GetAllTransactionsForTable(
+	description *string,
+	account *string,
+	category *string,
+	dateTimeStart *time.Time,
+	dateTimeEnd *time.Time,
+	amountMoreThan *float32,
+	amountLessThan *float32,
+	limit *int,
+	afterCursor *string,
+) {
+	var accountObjectId, categoryObjectId, afterCursorObjectId *primitive.ObjectID = nil, nil, nil
+	limitPlusOne := 20 + 1 // to check hasNext with cursor based pagination
+	if account != nil {
+		tmp, _ := primitive.ObjectIDFromHex(*account)
+		accountObjectId = &tmp
+	}
+	if category != nil {
+		tmp, _ := primitive.ObjectIDFromHex(*category)
+		categoryObjectId = &tmp
+	}
+	if afterCursor != nil {
+		tmp, _ := primitive.ObjectIDFromHex(*afterCursor)
+		afterCursorObjectId = &tmp
+	}
+	if limit != nil {
+		limitPlusOne = *limit + 1
+	}
+	transactions, err := o.Handler.Orms.Transaction.GetManyNoObjectId(
+		dt.TransactionQuery{
+			&o.UserId, accountObjectId, categoryObjectId,
+			description, dateTimeStart, dateTimeEnd,
+			amountMoreThan, amountLessThan,
+			limitPlusOne,
+			afterCursorObjectId,
+		},
+	)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	if transactions == nil || len(transactions) < 1 {
+		o.ResponseBuilder.SetData([]*dt.Transaction{}).SetPaging(false, nil, nil).ServeJSON()
+
+		return
+	}
+
+	var hasNext bool
+	if len(transactions) < limitPlusOne {
+		hasNext = false
+	} else {
+		hasNext = true
+		// remove extra document as hasNext already determined
+		transactions = transactions[:len(transactions)-1]
+	}
+
+	newQueryParams := o.Ctx.Request.URL.Query()
+	lastIndex := len(transactions) - 1
+	afterCursorInPaging := transactions[lastIndex].Id
+	newQueryParams.Set("afterCursor", afterCursorInPaging.Hex())
+	tempRequest, err := http.NewRequest(
+		o.Ctx.Input.Method(),
+		fmt.Sprintf("%v%v", os.Getenv(constants.EnvBackendUrl), o.Ctx.Input.URI()),
+		nil,
+	)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	tempRequest.URL.RawQuery = newQueryParams.Encode()
+	nextUrlString := tempRequest.URL.String()
+	newQueryParams.Set("next", nextUrlString)
+	o.ResponseBuilder.SetData(transactions).SetPaging(hasNext, afterCursorInPaging, &nextUrlString).ServeJSON()
+}
+
+// @Title get all transactions
+// @Param description  query  string false  "description"
+// @Param account  query  string false  "account"
+// @Param category  query string false  "category"
+// @Param dateTimeStart  query  time.Time false  "dateTimeStart"
+// @Param dateTimeEnd  query  time.Time false  "dateTimeEnd"
+// @Param limit  query  int false  "limit"
+// @Param afterCursor  query  string false  "afterCursor"
 // @router / [get]
 func (o *TransactionController) GetAllTransactions(
 	description *string,

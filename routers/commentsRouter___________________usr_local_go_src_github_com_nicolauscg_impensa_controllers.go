@@ -227,6 +227,25 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
+        beego.ControllerComments{
+            Method: "GetAllTransactionsForTable",
+            Router: `/table`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("description"),
+				param.New("account"),
+				param.New("category"),
+				param.New("dateTimeStart"),
+				param.New("dateTimeEnd"),
+				param.New("amountMoreThan"),
+				param.New("amountLessThan"),
+				param.New("limit"),
+				param.New("afterCursor"),
+			),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:UserController"],
         beego.ControllerComments{
             Method: "UpdateUser",

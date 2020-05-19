@@ -7,31 +7,65 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type ReccurenceTransactionInterval int
+
+const (
+	RepeatDay ReccurenceTransactionInterval = iota
+	RepeatWeek
+	RepeatMonth
+	RepeatYear
+)
+
+func (r ReccurenceTransactionInterval) String() string {
+	return [...]string{"day", "week", "month", "year"}[r]
+}
+
 type Transaction struct {
-	Id          *primitive.ObjectID `json:"id" bson:"_id"`
-	User        *primitive.ObjectID `json:"user" bson:"user"`
-	Account     *primitive.ObjectID `json:"account" bson:"account"`
-	Category    *primitive.ObjectID `json:"category" bson:"category"`
-	Amount      *float32            `json:"amount" bson:"amount"`
-	Description *string             `json:"description" bson:"description"`
-	DateTime    *time.Time          `json:"dateTime" bson:"dateTime"`
-	Picture     *string             `json:"picture" bson:"picture"`
-	Location    *string             `json:"location" bson:"location"`
+	Id                 *primitive.ObjectID `json:"id" bson:"_id"`
+	User               *primitive.ObjectID `json:"user" bson:"user"`
+	Account            *primitive.ObjectID `json:"account" bson:"account"`
+	Category           *primitive.ObjectID `json:"category" bson:"category"`
+	Amount             *float32            `json:"amount" bson:"amount"`
+	Description        *string             `json:"description" bson:"description"`
+	DateTime           *time.Time          `json:"dateTime" bson:"dateTime"`
+	Picture            *string             `json:"picture" bson:"picture"`
+	Location           *string             `json:"location" bson:"location"`
+	IsReccurent        *bool               `json:"isReccurent" bson:"isReccurent"`
+	RepeatCount        *int                `json:"repeatCount" bson:"repeatCount"`
+	RepeatInterval     *int                `json:"repeatInterval" bson:"repeatInterval"`
+	ReccurenceLastDate *time.Time          `json:"reccurenceLastDate" bson:"reccurenceLastDate"`
 }
 
 func (t *Transaction) String() string {
 	return fmt.Sprintf("<Transaction %v %v %v %v>", t.Id, t.Amount, t.Description, t.DateTime)
 }
 
+type TransactionNoObjectId struct {
+	Id             *primitive.ObjectID `json:"id" bson:"_id"`
+	Account        *string             `json:"account" bson:"account"`
+	Category       *string             `json:"category" bson:"category"`
+	Amount         *float32            `json:"amount" bson:"amount"`
+	Description    *string             `json:"description" bson:"description"`
+	DateTime       *time.Time          `json:"dateTime" bson:"dateTime"`
+	Picture        *string             `json:"picture" bson:"picture"`
+	Location       *string             `json:"location" bson:"location"`
+	IsReccurent    *bool               `json:"isReccurent" bson:"isReccurent"`
+	RepeatCount    *int                `json:"repeatCount" bson:"repeatCount"`
+	RepeatInterval *int                `json:"repeatInterval" bson:"repeatInterval"`
+}
+
 type TransactionInsert struct {
-	User        *primitive.ObjectID `json:"user,omitempty" bson:"user,omitempty"`
-	Account     *primitive.ObjectID `json:"account,omitempty" bson:"account,omitempty"`
-	Category    *primitive.ObjectID `json:"category,omitempty" bson:"category,omitempty"`
-	Amount      *float32            `json:"amount,omitempty" bson:"amount,omitempty"`
-	Description *string             `json:"description,omitempty" bson:"description,omitempty"`
-	DateTime    *time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
-	Picture     *string             `json:"picture,omitempty" bson:"picture,omitempty"`
-	Location    *string             `json:"location" bson:"location"`
+	User           *primitive.ObjectID `jso:"user,omitempty" bson:"user,omitempty"`
+	Account        *primitive.ObjectID `json:"account,omitempty" bson:"account,omitempty"`
+	Category       *primitive.ObjectID `json:"category,omitempty" bson:"category,omitempty"`
+	Amount         *float32            `json:"amount,omitempty" bson:"amount,omitempty"`
+	Description    *string             `json:"description,omitempty" bson:"description,omitempty"`
+	DateTime       *time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
+	Picture        *string             `json:"picture,omitempty" bson:"picture,omitempty"`
+	Location       *string             `json:"location" bson:"location"`
+	IsReccurent    *bool               `json:"isReccurent" bson:"isReccurent"`
+	RepeatCount    *int                `json:"repeatCount" bson:"repeatCount"`
+	RepeatInterval *int                `json:"repeatInterval" bson:"repeatInterval"`
 }
 
 type TransactionQuery struct {
@@ -63,13 +97,16 @@ type TransactionUpdate struct {
 }
 
 type TransactionUpdateFields struct {
-	Account     *primitive.ObjectID `json:"account,omitempty" bson:"account,omitempty"`
-	Category    *primitive.ObjectID `json:"category,omitempty" bson:"category,omitempty"`
-	Amount      *float32            `json:"amount,omitempty" bson:"amount,omitempty"`
-	Description *string             `json:"description,omitempty" bson:"description,omitempty"`
-	DateTime    *time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
-	Picture     *string             `json:"picture,omitempty" bson:"picture,omitempty"`
-	Location    *string             `json:"location" bson:"location"`
+	Account        *primitive.ObjectID `json:"account,omitempty" bson:"account,omitempty"`
+	Category       *primitive.ObjectID `json:"category,omitempty" bson:"category,omitempty"`
+	Amount         *float32            `json:"amount,omitempty" bson:"amount,omitempty"`
+	Description    *string             `json:"description,omitempty" bson:"description,omitempty"`
+	DateTime       *time.Time          `json:"dateTime,omitempty" bson:"dateTime,omitempty"`
+	Picture        *string             `json:"picture,omitempty" bson:"picture,omitempty"`
+	Location       *string             `json:"location" bson:"location"`
+	IsReccurent    *bool               `json:"isReccurent" bson:"isReccurent"`
+	RepeatCount    *int                `json:"repeatCount" bson:"repeatCount"`
+	RepeatInterval *int                `json:"repeatInterval" bson:"repeatInterval"`
 }
 
 type TransactionDelete struct {
