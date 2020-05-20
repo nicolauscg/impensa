@@ -29,6 +29,68 @@ func (o *TransactionController) CreateTransaction(newTransaction dt.TransactionI
 	o.ResponseBuilder.SetData(insertResult).ServeJSON()
 }
 
+// @Title get a transaction by id with accounts and categories
+// @Param  id  path  string true "id"
+// @router /edit/:id [get]
+func (o *TransactionController) GetTransactionWithAccountsAndCategories(id string) {
+	transactionId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	transaction, err := o.Handler.Orms.Transaction.GetOneById(transactionId)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	} else if *transaction.User != o.UserId {
+		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
+
+		return
+	}
+	accounts, err := o.Handler.Orms.Account.GetManyByUserId(o.UserId)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	categories, err := o.Handler.Orms.Category.GetManyByUserId(o.UserId)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+
+	o.ResponseBuilder.SetData(map[string]interface{}{
+		"transaction": transaction,
+		"accounts":    accounts,
+		"categories":  categories,
+	}).ServeJSON()
+}
+
+// @Title get accounts and categories
+// @router /create [get]
+func (o *TransactionController) GetAccountsAndCategories() {
+	accounts, err := o.Handler.Orms.Account.GetManyByUserId(o.UserId)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	categories, err := o.Handler.Orms.Category.GetManyByUserId(o.UserId)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+
+	o.ResponseBuilder.SetData(map[string]interface{}{
+		"accounts":   accounts,
+		"categories": categories,
+	}).ServeJSON()
+}
+
 // @Title get a transaction by id
 // @Param  id  path  string true "id"
 // @router /:id [get]

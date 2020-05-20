@@ -166,25 +166,6 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
-            Method: "GetAllTransactions",
-            Router: `/`,
-            AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(
-				param.New("description"),
-				param.New("account"),
-				param.New("category"),
-				param.New("dateTimeStart"),
-				param.New("dateTimeEnd"),
-				param.New("amountMoreThan"),
-				param.New("amountLessThan"),
-				param.New("limit"),
-				param.New("afterCursor"),
-			),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
-        beego.ControllerComments{
             Method: "UpdateTransactions",
             Router: `/`,
             AllowHTTPMethods: []string{"put"},
@@ -207,6 +188,25 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
+            Method: "GetAllTransactions",
+            Router: `/`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("description"),
+				param.New("account"),
+				param.New("category"),
+				param.New("dateTimeStart"),
+				param.New("dateTimeEnd"),
+				param.New("amountMoreThan"),
+				param.New("amountLessThan"),
+				param.New("limit"),
+				param.New("afterCursor"),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
+        beego.ControllerComments{
             Method: "GetTransaction",
             Router: `/:id`,
             AllowHTTPMethods: []string{"get"},
@@ -218,11 +218,31 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
+            Method: "GetAccountsAndCategories",
+            Router: `/create`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
+        beego.ControllerComments{
             Method: "GetSomeDescriptionAutocomplete",
             Router: `/description/complete`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
 				param.New("description"),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
+        beego.ControllerComments{
+            Method: "GetTransactionWithAccountsAndCategories",
+            Router: `/edit/:id`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("id", param.IsRequired, param.InPath),
 			),
             Filters: nil,
             Params: nil})
