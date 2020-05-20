@@ -112,6 +112,44 @@ export const FormFields = {
       </FormControl>
     );
   },
+  selectFieldFromPropsData: ({
+    label,
+    name,
+    options,
+    optionDisplayer,
+    formControlProps = {},
+    inputLabelProps = {},
+    selectProps = {}
+  }) => (formik, classes) => {
+    const uniqueId = `${label}-${name}-${cyrpto
+      .randomBytes(4)
+      .toString("hex")}`;
+
+    return (
+      <FormControl
+        className={classes.formControl}
+        fullWidth={true}
+        {...formControlProps}
+      >
+        <InputLabel id={uniqueId} {...inputLabelProps}>
+          {label}
+        </InputLabel>
+        <Select
+          labelId={uniqueId}
+          value={formik.values[name]}
+          name={name}
+          onChange={formik.handleChange}
+          {...selectProps}
+        >
+          {options.map(option => (
+            <MenuItem value={option.id} key={option.id}>
+              {optionDisplayer(option)}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    );
+  },
   placesAutocompleteField: ({ label, name }) => formik => (
     <PlacesAutocomplete
       label={label}

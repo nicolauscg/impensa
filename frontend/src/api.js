@@ -39,6 +39,24 @@ export const urlGetAllTransactions = () => ({
   type: RESPONSE_TYPE.ARRAY,
   manual: true
 });
+export const urlGetAllTransactionsForTable = () => ({
+  url: `${baseUrl}/transaction/table`,
+  method: "GET",
+  type: RESPONSE_TYPE.ARRAY,
+  manual: true
+});
+export const urlGetEditTransaction = id => ({
+  url: `${baseUrl}/transaction/edit/${id}`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlGetCreateTransaction = () => ({
+  url: `${baseUrl}/transaction/create`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
 export const urlCreateTransaction = () => ({
   url: `${baseUrl}/transaction`,
   method: "POST",

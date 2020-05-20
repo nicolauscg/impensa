@@ -9,10 +9,10 @@ import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 
 import {
   useAxiosSafely,
-  urlGetAllTransactionsForTable,
-  urlGetEditTransaction,
-  urlGetCreateTransaction,
+  urlGetAllTransactions,
   urlCreateTransaction,
+  urlGetAllAccounts,
+  urlGetAllCategories,
   urlUpdateTransaction,
   urlDeleteTransaction
 } from "../../api";
@@ -73,39 +73,13 @@ const TransactionsPage = () => {
     },
     refetchTransactionsFromAxios
   ] = useAxiosSafely(
-    urlGetAllTransactionsForTable({
+    urlGetAllTransactions({
       params: {
         dateTimeStart: getStartOfCurrentMonthAsString(),
         dateTimeEnd: getEndOfCurrentMonthAsString()
       }
     })
   );
-  const [
-    { data: editData, loading: editLoading },
-    fetchEditTransaction
-  ] = useAxiosSafely(urlGetEditTransaction());
-  const [
-    { data: createData, loading: createLoading },
-    fetchCreateTransaction
-  ] = useAxiosSafely(urlGetCreateTransaction());
-
-  const fetchFormDataBasedOnModalMode = id => {
-    // setState does not modify but ensure previous setModalMode update has been appliead
-    setModalMode(prevModalMode => {
-      if (prevModalMode === FormTypes.CREATE) {
-        fetchCreateTransaction();
-      } else {
-        fetchEditTransaction(urlGetEditTransaction(id)).then(res => {
-          setModalData(R.pathOr({}, ["data", "data", "transaction"], res));
-        });
-      }
-
-      return prevModalMode;
-    });
-  };
-
-  const getFormDataBasedOnModalMode = () =>
-    modalMode === FormTypes.CREATE ? createData : editData;
 
   useEffect(() => {
     if (transactionsData && transactionPaging.nextUrl !== scrollNextUrl) {
@@ -141,6 +115,15 @@ const TransactionsPage = () => {
     refetchTransactionsFromAxios(test);
   };
 
+  const [
+    { data: accountsData, loading: accountsLoading },
+    fetchAccounts
+  ] = useAxiosSafely(urlGetAllAccounts());
+  const [
+    { data: categoriesData, loading: categoriesLoading },
+    fetchCategories
+  ] = useAxiosSafely(urlGetAllCategories());
+
   useEffect(() => {
     refetchTransactionsFromAxios({
       params: {
@@ -148,6 +131,8 @@ const TransactionsPage = () => {
         dateTimeEnd: getEndOfCurrentMonthAsString()
       }
     });
+    fetchAccounts();
+    fetchCategories();
   }, []);
 
   const isFirstRun = useRef(true);
@@ -200,10 +185,8 @@ const TransactionsPage = () => {
   });
 
   const resetModalData = () => setModalData(initialModalData);
-  const handleOpenNewTransactionModal = id => {
+  const handleOpenNewTransactionModal = () =>
     setNewTransactionModelIsOpen(true);
-    fetchFormDataBasedOnModalMode(id);
-  };
   const handleCloseNewTransactionModal = () => {
     setNewTransactionModelIsOpen(false);
   };
@@ -221,7 +204,8 @@ const TransactionsPage = () => {
   };
   const handleOnEdit = data => {
     setModalMode(FormTypes.UPDATE);
-    handleOpenNewTransactionModal(data.id);
+    setModalData(data);
+    handleOpenNewTransactionModal();
   };
   const handleOnDelete = ids => {
     deleteTransaction({ data: { ids } })
@@ -242,11 +226,11 @@ const TransactionsPage = () => {
     handleOnLoad();
   };
 
-  const loading = transactionsLoading || editLoading || createLoading;
+  const loading = transactionsLoading || accountsLoading || categoriesLoading;
   const createOrEditTransactionModalProps = {
     title:
       modalMode === FormTypes.CREATE ? "New Transaction" : "Edit Transaction",
-    data: R.propOr({}, "transaction", getFormDataBasedOnModalMode()),
+    data: modalData,
     loading,
     isOpen: newTransactionModelIsOpen,
     handleClose: handleCloseNewTransactionModal,
@@ -267,16 +251,16 @@ const TransactionsPage = () => {
         type: "text",
         name: "description"
       }),
-      FormFields.selectFieldFromPropsData({
+      FormFields.selectField({
         label: "Category",
         name: "category",
-        options: R.propOr([], "categories", getFormDataBasedOnModalMode()),
+        options: categoriesData,
         optionDisplayer: R.prop("name")
       }),
-      FormFields.selectFieldFromPropsData({
+      FormFields.selectField({
         label: "Account",
         name: "account",
-        options: R.propOr([], "accounts", getFormDataBasedOnModalMode()),
+        options: accountsData,
         optionDisplayer: R.prop("name")
       }),
       FormFields.placesAutocompleteField({
@@ -309,7 +293,10 @@ const TransactionsPage = () => {
         options: {
           filter: true,
           sort: false,
-          filterType: "checkbox"
+          filterType: "checkbox",
+          filterOptions: {
+            names: categoriesData.map(row => row.name)
+          }
         }
       },
       {
@@ -319,7 +306,10 @@ const TransactionsPage = () => {
           filter: true,
           display: "true",
           sort: false,
-          filterType: "checkbox"
+          filterType: "checkbox",
+          filterOptions: {
+            names: accountsData.map(row => row.name)
+          }
         }
       },
       {
@@ -334,13 +324,22 @@ const TransactionsPage = () => {
     dataFormatters: {
       dateTime: DataTableFormatter.formatDateFrom(R.prop("dateTime")),
       description: R.prop("description"),
-      category: R.prop("category"),
-      account: R.prop("account"),
+      category: DataTableFormatter.mapFromLookup(
+        R.prop("category"),
+        categoriesData,
+        R.prop("name")
+      ),
+      account: DataTableFormatter.mapFromLookup(
+        R.prop("account"),
+        accountsData,
+        R.prop("name")
+      ),
       amount: R.prop("amount")
     },
     data: infiniteScrollData,
     onEdit: handleOnEdit,
     onDelete: handleOnDelete,
+    categoriesData,
     onSearch: handleOnSearch,
     onLoadMore: throttledAndCancel,
     hasMore: true
