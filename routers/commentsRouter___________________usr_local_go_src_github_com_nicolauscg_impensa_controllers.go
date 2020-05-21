@@ -140,7 +140,10 @@ func init() {
             Method: "GetTransactionAccountSummary",
             Router: `/transaction/account`,
             AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("dateTimeStart"),
+				param.New("dateTimeEnd"),
+			),
             Filters: nil,
             Params: nil})
 
@@ -149,7 +152,10 @@ func init() {
             Method: "GetTransactionCategorySummary",
             Router: `/transaction/category`,
             AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
+            MethodParams: param.Make(
+				param.New("dateTimeStart"),
+				param.New("dateTimeEnd"),
+			),
             Filters: nil,
             Params: nil})
 

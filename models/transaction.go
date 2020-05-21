@@ -106,9 +106,10 @@ func (o *transactionOrm) GetManyNoObjectId(query dt.TransactionQuery) (transacti
 	findOptions := options.Find()
 	if query.Limit > 0 {
 		findOptions.SetLimit(int64(query.Limit))
+	} else if query.Limit == 0 {
+		findOptions.SetLimit(1000)
 	}
-	findOptions.SetSort(bson.D{{"_id", 1}})
-
+	findOptions.SetSort(bson.D{{"dateTime", 1}})
 	cur, err := o.transactionCollection.Aggregate(context.TODO(), bson.A{
 		bson.M{"$match": dbOuterQuery},
 		bson.M{"$sort": findOptions.Sort},
