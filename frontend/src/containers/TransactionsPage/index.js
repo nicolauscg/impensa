@@ -39,7 +39,10 @@ const TransactionsPage = () => {
     account: "",
     category: "",
     picture: "",
-    location: ""
+    location: "",
+    isReccurent: false,
+    repeatCount: "",
+    repeatInverval: ""
   };
 
   const [newTransactionModelIsOpen, setNewTransactionModelIsOpen] = useState(
@@ -286,6 +289,44 @@ const TransactionsPage = () => {
       FormFields.placesAutocompleteField({
         label: "Location",
         name: "location"
+      }),
+      FormFields.checkBoxField({
+        label: "Reccuring",
+        name: "isReccurent"
+      }),
+      FormFields.textField({
+        label: "Repeat Count",
+        name: "repeatCount",
+        type: "number",
+        textFieldProps: {
+          disabled: !formikTrasaction.values.isReccurent
+        }
+      }),
+      FormFields.selectFieldFromPropsData({
+        label: "Repeat Interval",
+        name: "repeatInterval",
+        options: [
+          {
+            id: 0,
+            display: "day"
+          },
+          {
+            id: 1,
+            display: "week"
+          },
+          {
+            id: 2,
+            display: "month"
+          },
+          {
+            id: 3,
+            display: "year"
+          }
+        ],
+        optionDisplayer: R.prop("display"),
+        formControlProps: {
+          disabled: !formikTrasaction.values.isReccurent
+        }
       })
     ]
   };

@@ -11,7 +11,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  FormControl
+  FormControl,
+  FormControlLabel,
+  Checkbox
 } from "@material-ui/core";
 import { KeyboardDatePicker } from "@material-ui/pickers";
 
@@ -156,6 +158,19 @@ export const FormFields = {
       name={name}
       value={formik.values[name]}
       handleValueChange={val => formik.setFieldValue(name, val)}
+    />
+  ),
+  checkBoxField: ({ label, name }) => formik => (
+    <FormControlLabel
+      control={
+        <Checkbox
+          checked={formik.values[name]}
+          onChange={formik.handleChange}
+          name={name}
+          color="primary"
+        />
+      }
+      label={label}
     />
   )
 };
