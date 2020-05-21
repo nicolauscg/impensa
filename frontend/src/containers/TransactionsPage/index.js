@@ -108,7 +108,11 @@ const TransactionsPage = () => {
     modalMode === FormTypes.CREATE ? createData : editData;
 
   useEffect(() => {
-    if (transactionsData && transactionPaging.nextUrl !== scrollNextUrl) {
+    if (
+      transactionsData &&
+      (transactionPaging.nextUrl === null ||
+        transactionPaging.nextUrl !== scrollNextUrl)
+    ) {
       setInfiniteScrollData(infiniteScrollData.concat(transactionsData));
     }
     if (transactionPaging) {
