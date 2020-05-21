@@ -90,15 +90,19 @@ func (o *transactionOrm) GetManyNoObjectId(query dt.TransactionQuery) (transacti
 	if query.Category != nil {
 		dbQuery = append(dbQuery, bson.E{"category", *query.Category})
 	}
-	if query.DateTimeStart != nil && query.DateTimeEnd != nil {
-		dbQuery = append(dbQuery, bson.E{"dateTime", bson.M{"$gt": *query.DateTimeStart, "$lt": *query.DateTimeEnd}})
-	}
 	if query.AmountMoreThan != nil {
 		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$gt": *query.AmountMoreThan}})
 	}
 	if query.AmountLessThan != nil {
 		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$lt": *query.AmountLessThan}})
 	}
+	dbOuterQuery := bson.M{"$and": bson.A{
+		dbQuery,
+		bson.M{"$or": bson.A{
+			bson.M{"dateTime": bson.M{"$gt": *query.DateTimeStart, "$lt": *query.DateTimeEnd}},
+			bson.M{"isReccurent": true, "reccurenceLastDate": bson.M{"$gt": *query.DateTimeStart}},
+		}},
+	}}
 	findOptions := options.Find()
 	if query.Limit > 0 {
 		findOptions.SetLimit(int64(query.Limit))
@@ -106,7 +110,7 @@ func (o *transactionOrm) GetManyNoObjectId(query dt.TransactionQuery) (transacti
 	findOptions.SetSort(bson.D{{"_id", 1}})
 
 	cur, err := o.transactionCollection.Aggregate(context.TODO(), bson.A{
-		bson.M{"$match": dbQuery},
+		bson.M{"$match": dbOuterQuery},
 		bson.M{"$sort": findOptions.Sort},
 		bson.M{"$limit": findOptions.Limit},
 		bson.M{"$lookup": bson.D{

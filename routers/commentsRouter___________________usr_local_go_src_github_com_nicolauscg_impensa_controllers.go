@@ -238,7 +238,7 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
-            Method: "GetTransactionWithAccountsAndCategories",
+            Method: "GetTransactionWithAccountsCategoriesRecurrence",
             Router: `/edit/:id`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(

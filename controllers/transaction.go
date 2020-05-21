@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/nicolauscg/impensa/constants"
@@ -20,6 +21,15 @@ type TransactionController struct {
 // @router / [post]
 func (o *TransactionController) CreateTransaction(newTransaction dt.TransactionInsert) {
 	newTransaction.User = &o.UserId
+	if *newTransaction.IsReccurent && (newTransaction.RepeatCount == nil || newTransaction.RepeatInterval == nil) {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, constants.ErrorTransactionRecurrenceOptionInvalid).ServeJSON()
+
+		return
+	}
+	if *newTransaction.IsReccurent {
+		temp := newTransaction.RepeatInterval.GetTimeFrom(*newTransaction.DateTime, *newTransaction.RepeatCount)
+		newTransaction.ReccurenceLastDate = &temp
+	}
 	insertResult, err := o.Handler.Orms.Transaction.InsertOne(newTransaction)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
@@ -32,7 +42,7 @@ func (o *TransactionController) CreateTransaction(newTransaction dt.TransactionI
 // @Title get a transaction by id with accounts and categories
 // @Param  id  path  string true "id"
 // @router /edit/:id [get]
-func (o *TransactionController) GetTransactionWithAccountsAndCategories(id string) {
+func (o *TransactionController) GetTransactionWithAccountsCategoriesRecurrence(id string) {
 	transactionId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
@@ -162,39 +172,97 @@ func (o *TransactionController) GetAllTransactionsForTable(
 
 		return
 	}
-	if transactions == nil || len(transactions) < 1 {
-		o.ResponseBuilder.SetData([]*dt.Transaction{}).SetPaging(false, nil, nil).ServeJSON()
-
-		return
-	}
 
 	var hasNext bool
-	if len(transactions) < limitPlusOne {
+	var reccurencePagingDateTimeStart, reccurencePagingDateTimeEnd time.Time
+	var afterCursorInPaging *primitive.ObjectID
+	var nextUrlString *string
+
+	if afterCursor != nil {
+		for _, transaction := range transactions {
+			if transaction.Id.Hex() == *afterCursor {
+				reccurencePagingDateTimeStart = *transaction.DateTime
+				break
+			}
+		}
+	} else {
+		reccurencePagingDateTimeStart = *dateTimeStart
+	}
+
+	if transactions == nil || len(transactions) < 1 {
 		hasNext = false
+		reccurencePagingDateTimeEnd = *dateTimeEnd
+	} else if len(transactions) < limitPlusOne {
+		hasNext = false
+		reccurencePagingDateTimeEnd = *dateTimeEnd
 	} else {
 		hasNext = true
+		reccurencePagingDateTimeEnd = *transactions[len(transactions)-1].DateTime
 		// remove extra document as hasNext already determined
 		transactions = transactions[:len(transactions)-1]
 	}
 
-	newQueryParams := o.Ctx.Request.URL.Query()
-	lastIndex := len(transactions) - 1
-	afterCursorInPaging := transactions[lastIndex].Id
-	newQueryParams.Set("afterCursor", afterCursorInPaging.Hex())
-	tempRequest, err := http.NewRequest(
-		o.Ctx.Input.Method(),
-		fmt.Sprintf("%v%v", os.Getenv(constants.EnvBackendUrl), o.Ctx.Input.URI()),
-		nil,
-	)
-	if err != nil {
-		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+	if hasNext && (transactions != nil || len(transactions) > 0) {
+		newQueryParams := o.Ctx.Request.URL.Query()
+		lastIndex := len(transactions) - 1
+		afterCursorInPaging = transactions[lastIndex].Id
+		newQueryParams.Set("afterCursor", afterCursorInPaging.Hex())
+		tempRequest, err := http.NewRequest(
+			o.Ctx.Input.Method(),
+			fmt.Sprintf("%v%v", os.Getenv(constants.EnvBackendUrl), o.Ctx.Input.URI()),
+			nil,
+		)
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
-		return
+			return
+		}
+		tempRequest.URL.RawQuery = newQueryParams.Encode()
+		temp := tempRequest.URL.String()
+		nextUrlString = &temp
+		newQueryParams.Set("next", *nextUrlString)
+	} else {
+		afterCursorInPaging = nil
+		nextUrlString = nil
 	}
-	tempRequest.URL.RawQuery = newQueryParams.Encode()
-	nextUrlString := tempRequest.URL.String()
-	newQueryParams.Set("next", nextUrlString)
-	o.ResponseBuilder.SetData(transactions).SetPaging(hasNext, afterCursorInPaging, &nextUrlString).ServeJSON()
+
+	inferredTransactionsFromReccurences := make([]*dt.TransactionNoObjectId, 0)
+	var incrementingDateTime time.Time
+	var transactionCopy *dt.TransactionNoObjectId
+	for _, transaction := range transactions {
+		if transaction.IsReccurent != nil && *transaction.IsReccurent {
+			if err != nil {
+				o.ResponseBuilder.SetError(http.StatusInternalServerError, constants.ErrorCloningReccurentTransaction).ServeJSON()
+
+				return
+			}
+			incrementingDateTime = *transaction.DateTime
+			for incrementingDateTime.Before(*transaction.ReccurenceLastDate) &&
+				incrementingDateTime.Before(*dateTimeEnd) &&
+				incrementingDateTime.Before(reccurencePagingDateTimeEnd) {
+				transactionCopy = transaction.CloneWithDifferentDateTime()
+				if incrementingDateTime.After(*transaction.DateTime) &&
+					incrementingDateTime.After(*dateTimeStart) &&
+					incrementingDateTime.After(reccurencePagingDateTimeStart) {
+					temp := incrementingDateTime.Add(0)
+					transactionCopy.DateTime = &temp
+					inferredTransactionsFromReccurences = append(inferredTransactionsFromReccurences, transactionCopy)
+				}
+				incrementingDateTime = transaction.RepeatInterval.GetTimeFrom(incrementingDateTime, 1)
+			}
+		}
+	}
+	result := append(transactions, inferredTransactionsFromReccurences...)
+	sort.SliceStable(result, func(i, j int) bool {
+		return (*result[i].DateTime).Before(*result[j].DateTime)
+	})
+	filteredResult := make([]*dt.TransactionNoObjectId, 0)
+	for _, transaction := range result {
+		if transaction.DateTime.After(*dateTimeStart) && transaction.DateTime.Before(*dateTimeEnd) {
+			filteredResult = append(filteredResult, transaction)
+		}
+	}
+	o.ResponseBuilder.SetData(filteredResult).SetPaging(hasNext, afterCursorInPaging, nextUrlString).ServeJSON()
 }
 
 // @Title get all transactions
@@ -316,6 +384,14 @@ func (o *TransactionController) UpdateTransactions(transactionUpdate dt.Transact
 		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorResourceForbiddenOrNotFound).ServeJSON()
 
 		return
+	}
+	if transactionUpdate.Update.IsReccurent != nil &&
+		transactionUpdate.Update.RepeatCount != nil &&
+		transactionUpdate.Update.RepeatInterval != nil {
+		temp := transactionUpdate.Update.RepeatInterval.GetTimeFrom(
+			*transactionUpdate.Update.DateTime, *transactionUpdate.Update.RepeatCount,
+		)
+		transactionUpdate.Update.ReccurenceLastDate = &temp
 	}
 	updateResult, err := o.Handler.Orms.Transaction.UpdateManyByIds(transactionUpdate.Ids, &transactionUpdate.Update)
 	if err != nil {
