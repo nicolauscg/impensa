@@ -44,6 +44,11 @@ const Navbar = props => {
       name: "graph",
       action: ({ history }) => () => history.push("/graph"),
       authorized: true
+    },
+    {
+      name: "import export",
+      action: ({ history }) => () => history.push("/importexport"),
+      authorized: true
     }
   ];
 

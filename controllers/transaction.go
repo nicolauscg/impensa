@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"encoding/csv"
 	"fmt"
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/nicolauscg/impensa/constants"
@@ -419,4 +422,67 @@ func (o *TransactionController) DeleteTransactions(transactionDelete dt.Transact
 		return
 	}
 	o.ResponseBuilder.SetData(deleteResult).ServeJSON()
+}
+
+// @Title import transactions through uploaded csv file
+// @Param transactionImport  body dt.TransactionImportCsv true  "transactionImport"
+// @router /import [post]
+func (o *TransactionController) ImporTransactions(transactionImport dt.TransactionImportCsv) {
+	lines, err := csv.NewReader(strings.NewReader(*transactionImport.Csv)).ReadAll()
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+
+	transactions := make([]interface{}, len(lines)-1)
+	for i, line := range lines {
+		if i == 0 {
+			continue
+		}
+		accountId, err := primitive.ObjectIDFromHex(line[0])
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+		categoryId, err := primitive.ObjectIDFromHex(line[1])
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+		amount, err := strconv.ParseFloat(line[2], 32)
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+		amount32 := float32(amount)
+		dateTime, err := time.Parse(time.RFC3339, line[4])
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+		transactions[i-1] = dt.TransactionInsert{
+			User:        &o.UserId,
+			Account:     &accountId,
+			Category:    &categoryId,
+			Amount:      &amount32,
+			Description: &line[3],
+			DateTime:    &dateTime,
+			Picture:     &line[5],
+			Location:    &line[6],
+		}
+	}
+
+	insertManyResult, err := o.Handler.Orms.Transaction.InsertMany(transactions)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+
+	o.ResponseBuilder.SetData(insertManyResult).ServeJSON()
 }

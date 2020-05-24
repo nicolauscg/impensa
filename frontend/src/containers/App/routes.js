@@ -6,6 +6,7 @@ import AccountsPage from "../AccountsPage";
 import CategoriesPage from "../CategoriesPage";
 import ProfilePage from "../ProfilePage";
 import GraphPage from "../GraphPage";
+import ImportExportPage from "../ImportExportPage";
 
 export const routes = [
   {
@@ -48,6 +49,12 @@ export const routes = [
     component: GraphPage,
     exact: true,
     path: "/graph",
+    protected: true
+  },
+  {
+    component: ImportExportPage,
+    exact: true,
+    path: "/importexport",
     protected: true
   },
   { component: NotFoundPage }

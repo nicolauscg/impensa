@@ -14,6 +14,7 @@ import (
 
 type TransactionOrmer interface {
 	InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error)
+	InsertMany(inserts []interface{}) (*mongo.InsertManyResult, error)
 	GetMany(query dt.TransactionQuery) ([]*dt.Transaction, error)
 	GetManyNoObjectId(query dt.TransactionQuery) ([]*dt.TransactionNoObjectId, error)
 	GetSomeDescriptionsByPartialDescription(partialDescription *dt.TransactionDescriptionAutocomplete) ([]*dt.TransactionDescriptionAutocompleteResponse, error)
@@ -33,6 +34,10 @@ func NewTransactionOrm(db *mongo.Database) *transactionOrm {
 
 func (o *transactionOrm) InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error) {
 	return o.transactionCollection.InsertOne(context.TODO(), insert)
+}
+
+func (o *transactionOrm) InsertMany(inserts []interface{}) (*mongo.InsertManyResult, error) {
+	return o.transactionCollection.InsertMany(context.TODO(), inserts)
 }
 
 func (o *transactionOrm) GetMany(query dt.TransactionQuery) (transactions []*dt.Transaction, err error) {

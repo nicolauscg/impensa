@@ -135,6 +135,12 @@ export const urlGraphTransactionAccount = () => ({
   type: RESPONSE_TYPE.ARRAY,
   manual: true
 });
+export const urlImportTransaction = () => ({
+  url: `${baseUrl}/transaction/import`,
+  method: "POST",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
 
 /*
   wrapper for fetching data that returns

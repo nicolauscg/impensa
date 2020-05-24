@@ -142,3 +142,7 @@ type TransactionUpdateFields struct {
 type TransactionDelete struct {
 	Ids []primitive.ObjectID `json:"ids" bson:"ids"`
 }
+
+type TransactionImportCsv struct {
+	Csv *string `json:"csv,omitempty" bson:"csv,omitempty"`
+}
