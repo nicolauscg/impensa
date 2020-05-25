@@ -12,6 +12,7 @@ type User struct {
 	Email    string             `json:"email" bson:"email"`
 	Password string             `json:"password" bson:"password"`
 	Picture  string             `json:"picture" bson:"picture"`
+	Verified bool               `json:"verified" bson:"verified"`
 }
 
 type UserItem struct {
@@ -19,6 +20,7 @@ type UserItem struct {
 	Username string             `json:"username" bson:"username"`
 	Email    string             `json:"email" bson:"email"`
 	Picture  string             `json:"picture" bson:"picture"`
+	Verified bool               `json:"verified" bson:"verified"`
 }
 
 func (u *User) String() string {

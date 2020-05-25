@@ -9,4 +9,5 @@ const (
 	ErrorUsernameAlreadyTaken               = "username already taken"
 	ErrorTransactionRecurrenceOptionInvalid = "transaction recurrence option invalid"
 	ErrorCloningReccurentTransaction        = "error processing reccurent transactions"
+	ErrorIncorrectVerifyKey                 = "verify key is incorrect"
 )

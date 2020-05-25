@@ -82,6 +82,18 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:AuthController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:AuthController"],
+        beego.ControllerComments{
+            Method: "VerifyAccount",
+            Router: `/verify`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("userId", param.IsRequired),
+				param.New("verifyKey", param.IsRequired),
+			),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:CategoryController"],
         beego.ControllerComments{
             Method: "CreateCategory",

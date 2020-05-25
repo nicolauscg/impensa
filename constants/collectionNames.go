@@ -5,4 +5,5 @@ const (
 	CollTransactions = "transactions"
 	CollAccounts     = "accounts"
 	CollCategories   = "categories"
+	CollVerifyUsers  = "verifyUsers"
 )

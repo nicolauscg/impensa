@@ -68,6 +68,8 @@ func (o *AuthController) Login(credential dt.AuthLogin) {
 // @router /register [post]
 func (o *AuthController) Register(newUser dt.AuthRegister) {
 	newUser.Email = strings.ToLower(newUser.Email)
+	temp := false
+	newUser.Verified = &temp
 
 	user, err := o.Handler.Orms.User.GetOneByEmail(newUser.Email)
 	if user != nil && err == nil {
@@ -98,12 +100,14 @@ func (o *AuthController) Register(newUser dt.AuthRegister) {
 		return
 	}
 	newUserWithHashedPassword.Password = hashedPassword
-	_, err = o.Handler.Orms.User.InsertOne(newUserWithHashedPassword)
+	insertResult, err := o.Handler.Orms.User.InsertOne(newUserWithHashedPassword)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 		return
 	}
+
+	o.Handler.Orms.VerifyAccount.InsertOne(insertResult.InsertedID.(primitive.ObjectID))
 	o.Login(dt.AuthLogin{newUser.Email, newUser.Password, false})
 }
 
@@ -180,4 +184,29 @@ func comparePasswords(hashedPassword string, plainPassword string) bool {
 	}
 
 	return true
+}
+
+// @Title verify account
+// @Param userId  query string true  "userId"
+// @Param verifyKey  query  string true  "verifyKey"
+// @router /verify [get]
+func (o *AuthController) VerifyAccount(userId *string, verifyKey *string) {
+	userObjectId, err := primitive.ObjectIDFromHex(*userId)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusForbidden, err.Error()).ServeJSON()
+
+		return
+	}
+	exist, err := o.Handler.Orms.VerifyAccount.Verify(userObjectId, *verifyKey)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusForbidden, err.Error()).ServeJSON()
+
+		return
+	}
+
+	if exist {
+		o.ResponseBuilder.SetData("account verified").ServeJSON()
+	} else {
+		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorIncorrectVerifyKey).ServeJSON()
+	}
 }
