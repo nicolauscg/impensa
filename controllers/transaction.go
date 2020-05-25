@@ -1,12 +1,12 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"net/http"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -427,7 +427,7 @@ func (o *TransactionController) DeleteTransactions(transactionDelete dt.Transact
 // @Title import transactions through uploaded csv file
 // @Param transactionImport  body dt.TransactionImportCsv true  "transactionImport"
 // @router /import [post]
-func (o *TransactionController) ImporTransactions(transactionImport dt.TransactionImportCsv) {
+func (o *TransactionController) ImportTransactions(transactionImport dt.TransactionImportCsv) {
 	lines, err := csv.NewReader(strings.NewReader(*transactionImport.Csv)).ReadAll()
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
@@ -440,41 +440,14 @@ func (o *TransactionController) ImporTransactions(transactionImport dt.Transacti
 		if i == 0 {
 			continue
 		}
-		accountId, err := primitive.ObjectIDFromHex(line[0])
+		transaction := dt.TransactionInsert{User: &o.UserId}
+		err := transaction.UnMarshalCSV(line)
 		if err != nil {
 			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 			return
 		}
-		categoryId, err := primitive.ObjectIDFromHex(line[1])
-		if err != nil {
-			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
-
-			return
-		}
-		amount, err := strconv.ParseFloat(line[2], 32)
-		if err != nil {
-			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
-
-			return
-		}
-		amount32 := float32(amount)
-		dateTime, err := time.Parse(time.RFC3339, line[4])
-		if err != nil {
-			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
-
-			return
-		}
-		transactions[i-1] = dt.TransactionInsert{
-			User:        &o.UserId,
-			Account:     &accountId,
-			Category:    &categoryId,
-			Amount:      &amount32,
-			Description: &line[3],
-			DateTime:    &dateTime,
-			Picture:     &line[5],
-			Location:    &line[6],
-		}
+		transactions[i-1] = transaction
 	}
 
 	insertManyResult, err := o.Handler.Orms.Transaction.InsertMany(transactions)
@@ -485,4 +458,52 @@ func (o *TransactionController) ImporTransactions(transactionImport dt.Transacti
 	}
 
 	o.ResponseBuilder.SetData(insertManyResult).ServeJSON()
+}
+
+// @Title export transactions by downloadeding csv file
+// @Param dateTimeStart  query  time.Time false  "dateTimeStart"
+// @Param dateTimeEnd  query  time.Time false  "dateTimeEnd"
+// @router /export [get]
+func (o *TransactionController) ExportTransactions(
+	dateTimeStart *time.Time,
+	dateTimeEnd *time.Time,
+) {
+	response := dt.NewCsvFileResponseBuilder(o.Ctx.ResponseWriter, "transactions")
+
+	b := &bytes.Buffer{}
+	w := csv.NewWriter(b)
+
+	if err := w.Write([]string{
+		"account", "category", "amount", "description", "dateTime", "picture",
+		"location", "isReccurent", "repeatCount", "repeatInterval", "reccurenceLastDate",
+	}); err != nil {
+		panic(err)
+	}
+
+	transactions, err := o.Handler.Orms.Transaction.GetMany(dt.TransactionQuery{
+		User:          &o.UserId,
+		DateTimeStart: dateTimeStart,
+		DateTimeEnd:   dateTimeEnd,
+	})
+
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	for _, transaction := range transactions {
+		csv, err := transaction.MarshalCSV()
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+		if err := w.Write(csv); err != nil {
+			panic(err)
+		}
+	}
+
+	w.Flush()
+
+	response.ServeFile(b.Bytes())
 }

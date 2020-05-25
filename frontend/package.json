@@ -18,6 +18,7 @@
     "formik": "^2.1.4",
     "history": "^4.7.2",
     "immutable": "^4.0.0-rc.12",
+    "js-file-download": "^0.4.12",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "mui-datatables": "^2.14.0",

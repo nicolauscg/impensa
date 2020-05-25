@@ -255,7 +255,19 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
-            Method: "ImporTransactions",
+            Method: "ExportTransactions",
+            Router: `/export`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("dateTimeStart"),
+				param.New("dateTimeEnd"),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
+        beego.ControllerComments{
+            Method: "ImportTransactions",
             Router: `/import`,
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(

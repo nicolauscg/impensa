@@ -141,6 +141,12 @@ export const urlImportTransaction = () => ({
   type: RESPONSE_TYPE.OBJECT,
   manual: true
 });
+export const urlExportTransaction = () => ({
+  url: `${baseUrl}/transaction/export`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
 
 /*
   wrapper for fetching data that returns

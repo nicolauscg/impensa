@@ -2,6 +2,7 @@ package datatransfers
 
 import (
 	"encoding/json"
+	"fmt"
 	"path"
 	"runtime"
 	"strings"
@@ -61,6 +62,18 @@ func NewResponseBuilder(responseContext *context.Response) *responseBuild {
 	return r
 }
 
+func NewCsvFileResponseBuilder(responseContext *context.Response, fileName string) *responseBuild {
+	r := &responseBuild{responseContext, apiResponse{}}
+	r.responseContext.Header().Set("Content-Type", "text/csv")
+	r.responseContext.Header().Set("Content-Description", "File Transfer")
+	r.responseContext.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%v.csv", fileName))
+	r.responseContext.Header().Set("Pragma", "no-cache")
+	r.responseContext.Header().Set("Expires", "0")
+	r.responseContext.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+
+	return r
+}
+
 func (r *responseBuild) SetData(data interface{}) *responseBuild {
 	r.response.Data = data
 
@@ -89,6 +102,10 @@ func (r *responseBuild) AddAdditionalError(domain string, reason string, message
 func (r *responseBuild) ServeJSON() {
 	responseBody, _ := json.Marshal(r.response)
 	r.responseContext.Write(responseBody)
+}
+
+func (r *responseBuild) ServeFile(b []byte) {
+	r.responseContext.Write(b)
 }
 
 func NewErrorResponse(code int, message string) *apiResponseError {

@@ -1,7 +1,10 @@
 package datatransfers
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -57,6 +60,149 @@ type Transaction struct {
 
 func (t *Transaction) String() string {
 	return fmt.Sprintf("<Transaction %v %v %v %v>", t.Id, t.Amount, t.Description, t.DateTime)
+}
+
+func (t *TransactionInsert) UnMarshalCSV(line []string) (err error) {
+	var accountId, categoryId *primitive.ObjectID
+
+	if line[0] != "" {
+		temp, err := primitive.ObjectIDFromHex(line[0])
+		accountId = &temp
+		if err != nil {
+			return err
+		}
+	} else {
+		accountId = nil
+	}
+
+	if line[1] != "" {
+		temp, err := primitive.ObjectIDFromHex(line[1])
+		categoryId = &temp
+		if err != nil {
+			return err
+		}
+	} else {
+		categoryId = nil
+	}
+
+	amount, err := strconv.ParseFloat(line[2], 32)
+	if err != nil {
+		return
+	}
+	amount32 := float32(amount)
+	dateTime, err := time.Parse(time.RFC3339, line[4])
+	if err != nil {
+		return
+	}
+	var isReccurent *bool
+	if line[7] != "" {
+		temp, err := strconv.ParseBool(line[7])
+		isReccurent = &temp
+		if err != nil {
+
+			return err
+		}
+	} else {
+		isReccurent = nil
+	}
+	var repeatCount *int
+	if line[8] != "" {
+		temp, err := strconv.ParseInt(line[8], 10, 32)
+		temp2 := int(temp)
+		repeatCount = &temp2
+		if err != nil {
+
+			return err
+		}
+	} else {
+		repeatCount = nil
+	}
+	var repeatInterval *ReccurenceTransactionInterval
+	if line[9] != "" {
+		temp, err := strconv.ParseInt(line[9], 10, 32)
+		temp2 := int(temp)
+		temp3 := ReccurenceTransactionInterval(temp2)
+		repeatInterval = &temp3
+
+		if err != nil {
+
+			return err
+		}
+	} else {
+		repeatInterval = nil
+	}
+	t.Account = accountId
+	t.Category = categoryId
+	t.Amount = &amount32
+	t.Description = &line[3]
+	t.DateTime = &dateTime
+	t.Picture = &line[5]
+	t.Location = &line[6]
+	t.IsReccurent = isReccurent
+	if isReccurent != nil && *isReccurent {
+		t.RepeatCount = repeatCount
+		t.RepeatInterval = repeatInterval
+		temp2 := repeatInterval.GetTimeFrom(dateTime, *repeatCount)
+		t.ReccurenceLastDate = &temp2
+	}
+
+	return
+}
+
+func (t *Transaction) MarshalCSV() ([]string, error) {
+	var err error
+	csv := make([]string, 0)
+	transactionType := reflect.TypeOf(t).Elem()
+	transactionValues := reflect.ValueOf(t).Elem()
+	for i := 0; i < transactionType.NumField(); i++ {
+		if i == 0 || i == 1 {
+			continue
+		}
+		value := transactionValues.Field(i)
+		switch fieldType := value.Interface().(type) {
+		default:
+			err = errors.New(fmt.Sprintf("invalid type %v when marshal transaction to csv", fieldType))
+			break
+		case *primitive.ObjectID:
+			if v := value.Interface().(*primitive.ObjectID); v != nil {
+				csv = append(csv, v.Hex())
+			} else {
+				csv = append(csv, "")
+			}
+		case *time.Time:
+			if v := value.Interface().(*time.Time); v != nil {
+				csv = append(csv, v.Format(time.RFC3339))
+			} else {
+				csv = append(csv, "")
+			}
+		case *float32:
+			if v := value.Interface().(*float32); v != nil {
+				csv = append(csv, fmt.Sprintf("%.2f", *v))
+			} else {
+				csv = append(csv, "")
+			}
+		case *string:
+			if v := value.Interface().(*string); v != nil {
+				csv = append(csv, *v)
+			} else {
+				csv = append(csv, "")
+			}
+		case *bool:
+			if v := value.Interface().(*bool); v != nil {
+				csv = append(csv, fmt.Sprintf("%v", *v))
+			} else {
+				csv = append(csv, "")
+			}
+		case *int:
+			if v := value.Interface().(*int); v != nil {
+				csv = append(csv, fmt.Sprintf("%v", *v))
+			} else {
+				csv = append(csv, "")
+			}
+		}
+	}
+
+	return csv, err
 }
 
 type TransactionNoObjectId struct {
@@ -145,4 +291,9 @@ type TransactionDelete struct {
 
 type TransactionImportCsv struct {
 	Csv *string `json:"csv,omitempty" bson:"csv,omitempty"`
+}
+
+type TransactionExportCsv struct {
+	DateTimeStart *time.Time `json:"dateTimeStart,omitempty" bson:"dateTimeStart,omitempty"`
+	DateTimeEnd   *time.Time `json:"dateTimeEnd,omitempty" bson:"dateTimeEnd,omitempty"`
 }
