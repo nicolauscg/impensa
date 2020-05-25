@@ -186,11 +186,11 @@ func comparePasswords(hashedPassword string, plainPassword string) bool {
 	return true
 }
 
-// @Title verify account
+// @Title verify user
 // @Param userId  query string true  "userId"
 // @Param verifyKey  query  string true  "verifyKey"
 // @router /verify [get]
-func (o *AuthController) VerifyAccount(userId *string, verifyKey *string) {
+func (o *AuthController) VerifyUser(userId *string, verifyKey *string) {
 	userObjectId, err := primitive.ObjectIDFromHex(*userId)
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusForbidden, err.Error()).ServeJSON()
@@ -206,6 +206,83 @@ func (o *AuthController) VerifyAccount(userId *string, verifyKey *string) {
 
 	if exist {
 		o.ResponseBuilder.SetData("account verified").ServeJSON()
+	} else {
+		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorIncorrectVerifyKey).ServeJSON()
+	}
+}
+
+// @Title request reset password
+// @Param requestResetUserPasswordBody  body dt.RequestResetUserPasswordBody true  "requestResetUserPasswordBody"
+// @router /requestreset [post]
+func (o *AuthController) RequestResetUserPassword(requestResetUserPasswordBody dt.RequestResetUserPasswordBody) {
+	user, err := o.Handler.Orms.User.GetOneByEmail(*requestResetUserPasswordBody.Email)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusForbidden, err.Error()).ServeJSON()
+
+		return
+	}
+	_, _, err = o.Handler.Orms.ResetUserPassword.InsertOne(user.Id)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusForbidden, err.Error()).ServeJSON()
+
+		return
+	}
+	o.ResponseBuilder.SetData("password request sent").ServeJSON()
+}
+
+// @Title reset account password
+// @Param resetUserPasswordBody  body dt.ResetUserPasswordBody true  "resetUserPasswordBody"
+// @router /resetpassword [post]
+func (o *AuthController) ResetUserPassword(resetUserPasswordBody dt.ResetUserPasswordBody) {
+	user, err := o.Handler.Orms.User.GetOneByEmail(*resetUserPasswordBody.Email)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusForbidden, err.Error()).ServeJSON()
+
+		return
+	}
+	userUpdateInModel := &dt.UserUpdateFieldsInModel{}
+	exist, err := o.Handler.Orms.ResetUserPassword.Verify(user.Id, *resetUserPasswordBody.VerifyKey)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusForbidden, err.Error()).ServeJSON()
+
+		return
+	}
+
+	if exist {
+		if resetUserPasswordBody.OldPassword != nil && resetUserPasswordBody.NewPassword != nil {
+			user, err := o.Handler.Orms.User.GetOneWithPasswordById(user.Id)
+			if err != nil {
+				o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+				return
+			}
+			if !comparePasswords(user.Password, *resetUserPasswordBody.OldPassword) {
+				o.ResponseBuilder.SetError(http.StatusInternalServerError, constants.ErrorOldPasswordMismatch).ServeJSON()
+
+				return
+			} else {
+				hashedPassword, err := hashAndSalt(*resetUserPasswordBody.NewPassword)
+				if err != nil {
+					o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+					return
+				}
+
+				userUpdateInModel.Password = &hashedPassword
+			}
+		}
+
+		updateResult, err := o.Handler.Orms.User.UpdateOneById(
+			user.Id,
+			userUpdateInModel,
+		)
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+			return
+		}
+
+		o.ResponseBuilder.SetData(updateResult).ServeJSON()
 	} else {
 		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorIncorrectVerifyKey).ServeJSON()
 	}

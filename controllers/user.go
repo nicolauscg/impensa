@@ -61,28 +61,6 @@ func (o *UserController) UpdateUser(userUpdate dt.UserUpdate) {
 		}
 		userUpdateInModel.Picture = &resizedBase64Img
 	}
-	if userUpdate.Update.OldPassword != nil && userUpdate.Update.NewPassword != nil {
-		user, err := o.Handler.Orms.User.GetOneWithPasswordById(userUpdate.Id)
-		if err != nil {
-			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
-
-			return
-		}
-		if !comparePasswords(user.Password, *userUpdate.Update.OldPassword) {
-			o.ResponseBuilder.SetError(http.StatusInternalServerError, constants.ErrorOldPasswordMismatch).ServeJSON()
-
-			return
-		} else {
-			hasedPassword, err := hashAndSalt(*userUpdate.Update.NewPassword)
-			if err != nil {
-				o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
-
-				return
-			}
-
-			userUpdateInModel.Password = &hasedPassword
-		}
-	}
 	updateResult, err := o.Handler.Orms.User.UpdateOneById(
 		userUpdate.Id,
 		userUpdateInModel,

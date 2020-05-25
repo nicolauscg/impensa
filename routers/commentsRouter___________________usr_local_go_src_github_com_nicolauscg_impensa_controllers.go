@@ -84,7 +84,29 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:AuthController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:AuthController"],
         beego.ControllerComments{
-            Method: "VerifyAccount",
+            Method: "RequestResetUserPassword",
+            Router: `/requestreset`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(
+				param.New("requestResetUserPasswordBody", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:AuthController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:AuthController"],
+        beego.ControllerComments{
+            Method: "ResetUserPassword",
+            Router: `/resetpassword`,
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(
+				param.New("resetUserPasswordBody", param.IsRequired, param.InBody),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:AuthController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:AuthController"],
+        beego.ControllerComments{
+            Method: "VerifyUser",
             Router: `/verify`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(
