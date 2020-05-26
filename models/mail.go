@@ -10,6 +10,8 @@ import (
 
 type MailOrmer interface {
 	SendMail(dt.MailParam) (*dt.MailSuccessResponse, error)
+	CreateMailMessage(mailParam dt.MailParam) *mailgun.Message
+	SendMailMessage(message *mailgun.Message) (*dt.MailSuccessResponse, error)
 }
 
 type mailOrm struct {
@@ -39,5 +41,26 @@ func (o *mailOrm) SendMail(mailParam dt.MailParam) (*dt.MailSuccessResponse, err
 	}
 
 	return &dt.MailSuccessResponse{Message: resp, Id: id}, nil
+}
 
+func (o *mailOrm) CreateMailMessage(mailParam dt.MailParam) *mailgun.Message {
+	message := o.mailgun.NewMessage(
+		"mail@impensa.nicolauscg.me",
+		mailParam.Subject,
+		"",
+		mailParam.Recipient,
+	)
+	message.SetHtml(mailParam.Body)
+
+	return message
+}
+
+func (o *mailOrm) SendMailMessage(message *mailgun.Message) (*dt.MailSuccessResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	resp, id, err := o.mailgun.Send(ctx, message)
+	if err != nil {
+		return nil, err
+	}
+	return &dt.MailSuccessResponse{Message: resp, Id: id}, nil
 }

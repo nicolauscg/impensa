@@ -171,6 +171,19 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:GraphController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:GraphController"],
         beego.ControllerComments{
+            Method: "MailTransactionSummary",
+            Router: `/mail`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(
+				param.New("dateTimeStart"),
+				param.New("dateTimeEnd"),
+				param.New("email"),
+			),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:GraphController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:GraphController"],
+        beego.ControllerComments{
             Method: "GetTransactionAccountSummary",
             Router: `/transaction/account`,
             AllowHTTPMethods: []string{"get"},

@@ -6,7 +6,9 @@ require (
 	github.com/astaxie/beego v1.12.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.2
+	github.com/go-echarts/go-echarts v0.0.0-20200525051329-dea0e75cdde8
 	github.com/gobuffalo/envy v1.9.0 // indirect
+	github.com/gobuffalo/packr v1.30.1 // indirect
 	github.com/ijustfool/docker-secrets v0.0.0-20191021062307-b25ea5007562
 	github.com/joho/godotenv v1.3.0
 	github.com/mailgun/mailgun-go v2.0.0+incompatible
