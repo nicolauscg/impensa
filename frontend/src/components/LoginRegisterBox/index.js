@@ -1,6 +1,7 @@
 import React from "react";
 import SwipeableViews from "react-swipeable-views";
 import * as R from "ramda";
+import * as zxcvbn from "zxcvbn";
 
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import {
@@ -17,6 +18,26 @@ import {
   FormHelperText,
   Link
 } from "@material-ui/core";
+
+export const getPasswordDifficulty = password => {
+  const { score } = zxcvbn(password);
+  if (score < 2) {
+    return {
+      score: 0,
+      message: "low"
+    };
+  } else if (score < 4) {
+    return {
+      score: 1,
+      message: "medium"
+    };
+  }
+
+  return {
+    score: 2,
+    message: "high"
+  };
+};
 
 const TabPanel = props => {
   const { children, value, index, ...other } = props;
@@ -49,7 +70,12 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const LoginRegisterBox = ({ formikLogin, formikRegister, history }) => {
+const LoginRegisterBox = ({
+  formikLogin,
+  formikRegister,
+  history,
+  disableSubmit
+}) => {
   const classes = useStyles();
   const theme = useTheme();
   const [value, setValue] = React.useState(0);
@@ -191,21 +217,30 @@ const LoginRegisterBox = ({ formikLogin, formikRegister, history }) => {
                 {R.propOr("", "username", formikRegister.errors)}
               </FormHelperText>
             </FormControl>
-            <TextField
-              id="password"
-              label="password"
-              name="password"
-              type="password"
-              onChange={formikRegister.handleChange}
-              value={formikRegister.values.password}
+            <FormControl
               fullWidth={true}
-            />
+              error={R.hasPath(["password"], formikRegister.errors)}
+            >
+              <TextField
+                id="password"
+                label="password"
+                name="password"
+                type="password"
+                onChange={formikRegister.handleChange}
+                value={formikRegister.values.password}
+                fullWidth={true}
+              />
+              <FormHelperText id="my-helper-text">
+                {R.propOr("", "password", formikRegister.errors)}
+              </FormHelperText>
+            </FormControl>
             <Button
               variant="contained"
               color="primary"
               type="submit"
               fullWidth={true}
               className="mt-5"
+              disabled={disableSubmit}
             >
               Register
             </Button>

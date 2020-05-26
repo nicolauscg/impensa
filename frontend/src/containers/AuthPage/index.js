@@ -3,7 +3,9 @@ import { useFormik } from "formik";
 import useAxios from "axios-hooks";
 import * as R from "ramda";
 
-import LoginRegisterBox from "../../components/LoginRegisterBox";
+import LoginRegisterBox, {
+  getPasswordDifficulty
+} from "../../components/LoginRegisterBox";
 import { isLoggedIn } from "../../auth";
 import { urlLogin, urlRegister } from "../../api";
 import { UserContext } from "../../containers/App/index";
@@ -57,6 +59,16 @@ const AuthPage = ({ history }) => {
         username: "",
         password: ""
       },
+      validate: values => {
+        const errors = {};
+        const { score } = getPasswordDifficulty(values.password);
+        if (score === 0) {
+          errors.password = `password strength too low`;
+        }
+
+        return errors;
+      },
+      validateOnChange: true,
       onSubmit: (values, formikBag) => {
         postRegister({
           data: values
@@ -84,6 +96,9 @@ const AuthPage = ({ history }) => {
       }
     })
   };
+  passedProp.disableSubmit =
+    getPasswordDifficulty(passedProp.formikRegister.values.password).score ===
+    0;
 
   return (
     <div className="align-self-center">
