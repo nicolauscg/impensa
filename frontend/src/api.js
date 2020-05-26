@@ -147,6 +147,12 @@ export const urlExportTransaction = () => ({
   type: RESPONSE_TYPE.OBJECT,
   manual: true
 });
+export const urlVerifyUser = () => ({
+  url: `${baseUrl}/auth/verify`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
 
 /*
   wrapper for fetching data that returns

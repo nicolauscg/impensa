@@ -7,6 +7,7 @@ import CategoriesPage from "../CategoriesPage";
 import ProfilePage from "../ProfilePage";
 import GraphPage from "../GraphPage";
 import ImportExportPage from "../ImportExportPage";
+import VerifyUserPage from "../VerifyUserPage";
 
 export const routes = [
   {
@@ -56,6 +57,12 @@ export const routes = [
     exact: true,
     path: "/importexport",
     protected: true
+  },
+  {
+    component: VerifyUserPage,
+    exact: true,
+    path: "/auth/verify",
+    protected: false
   },
   { component: NotFoundPage }
 ];

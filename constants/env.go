@@ -8,4 +8,5 @@ const (
 	EnvApiSecret        = "API_SECRET"
 	EnvProdFileName     = ".env"
 	EnvDevLocalFileName = ".env.development.local"
+	EnvMailgunApi       = "MAILGUN_API"
 )

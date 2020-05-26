@@ -107,7 +107,25 @@ func (o *AuthController) Register(newUser dt.AuthRegister) {
 		return
 	}
 
-	o.Handler.Orms.VerifyAccount.InsertOne(insertResult.InsertedID.(primitive.ObjectID))
+	_, verifyKey, err := o.Handler.Orms.VerifyAccount.InsertOne(insertResult.InsertedID.(primitive.ObjectID))
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+
+	verifyLink := fmt.Sprintf("%v/auth/verify?userId=%v&verifyKey=%v", os.Getenv(constants.EnvFrontendUrl), insertResult.InsertedID.(primitive.ObjectID).Hex(), verifyKey)
+	_, err = o.Handler.Orms.MailGun.SendMail(dt.MailParam{
+		Recipient: newUser.Email,
+		Subject:   "verify Impensa account",
+		Body:      fmt.Sprintf(`click <a href="%v">here</a> to verify your account`, verifyLink),
+	})
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, err.Error()).ServeJSON()
+
+		return
+	}
+
 	o.Login(dt.AuthLogin{newUser.Email, newUser.Password, false})
 }
 

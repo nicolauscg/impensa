@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"time"
 
 	"github.com/astaxie/beego"
+	"github.com/mailgun/mailgun-go/v4"
+	"github.com/nicolauscg/impensa/constants"
 	"github.com/nicolauscg/impensa/models"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -26,6 +29,7 @@ type Entity struct {
 	Category          models.CategoryOrmer
 	VerifyAccount     models.VerifyUserOrmer
 	ResetUserPassword models.ResetUserPasswordOrmer
+	MailGun           models.MailOrmer
 }
 
 func NewHandler(databaseName string, connString string) (handler *Handler, err error) {
@@ -63,6 +67,7 @@ func NewHandler(databaseName string, connString string) (handler *Handler, err e
 		models.NewCategoryOrm(handler.db),
 		models.NewVerifyUserOrm(handler.db),
 		models.NewResetUserPassword(handler.db),
+		models.NewMailOrmer(mailgun.NewMailgun("mail.impensa.nicolauscg.me", os.Getenv(constants.EnvMailgunApi))),
 	}
 
 	if handler == nil {

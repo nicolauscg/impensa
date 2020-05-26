@@ -35,7 +35,9 @@ func init() {
 		beego.BConfig.RunMode = "prod"
 		mgoConnString, _ = dockerSecrets.Get("IMPENSA_BE_MGOCONNSTRING")
 		apiSecret, _ := dockerSecrets.Get("IMPENSA_BE_API_SECRET")
+		mailgunApi, _ := dockerSecrets.Get("IMPENSA_BE_MAILGUN_API")
 		os.Setenv(constants.EnvApiSecret, apiSecret)
+		os.Setenv(constants.EnvMailgunApi, mailgunApi)
 	} else {
 		beego.Info(fmt.Sprintf("load development environment"))
 		if _, err := os.Stat(path.Join(projectDirPath, constants.EnvDevLocalFileName)); err != nil {
@@ -96,6 +98,11 @@ func init() {
 			beego.NSBefore(controllers.AuthFilter),
 			beego.NSInclude(
 				&controllers.GraphController{controllers.BaseController{Handler: handler}},
+			),
+		),
+		beego.NSNamespace("/mail",
+			beego.NSInclude(
+				&controllers.MailController{controllers.BaseController{Handler: handler}},
 			),
 		),
 	)
