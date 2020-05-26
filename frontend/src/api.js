@@ -165,6 +165,12 @@ export const urlResetUserPassword = () => ({
   type: RESPONSE_TYPE.OBJECT,
   manual: true
 });
+export const urlSendTransactionSummaryMail = () => ({
+  url: `${baseUrl}/graph/mail`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
 
 /*
   wrapper for fetching data that returns
