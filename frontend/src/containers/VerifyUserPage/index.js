@@ -72,10 +72,10 @@ const VerifyUserPage = ({ location, history }) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => history.push("/auth")}
+          onClick={() => history.push("/")}
           className="mt-3"
         >
-          go to login page
+          go back to home
         </Button>
       </div>
     );

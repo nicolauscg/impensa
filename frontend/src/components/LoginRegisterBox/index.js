@@ -163,7 +163,7 @@ const LoginRegisterBox = ({
               component="button"
               variant="body2"
               onClick={() => {
-                history.push("/resetpassword");
+                history.push("/auth/requestresetpassword");
               }}
             >
               forget password

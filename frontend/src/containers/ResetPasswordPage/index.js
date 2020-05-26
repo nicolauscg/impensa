@@ -20,7 +20,7 @@ function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
-const ResetPasswordPage = ({ location }) => {
+const ResetPasswordPage = ({ location, history }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const handleOpenSnackbar = () => {
     setSnackbarOpen(true);
@@ -59,7 +59,8 @@ const ResetPasswordPage = ({ location }) => {
 
   return (
     <div className="d-flex flex-column justify-content-center flex-grow-1">
-      <h1>Change password</h1>
+      <h1 onClick={() => history.push("/")}>Impensa</h1>
+      <h3>Change password</h3>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}

@@ -54,9 +54,9 @@ export const App = ({ history }) => {
   };
 
   const skipNavbarPath = [
-    "/verify",
+    "/auth/verify",
     "/auth/resetpassword",
-    "auth/requestresetpassword"
+    "/auth/requestresetpassword"
   ];
 
   useEffect(() => {
