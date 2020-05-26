@@ -15,7 +15,6 @@ type ResetUserPassword struct {
 type ResetUserPasswordBody struct {
 	Email       *string `json:"email,omitempty" bson:"email,omitempty"`
 	VerifyKey   *string `json:"verifyKey" bson:"verifyKey"`
-	OldPassword *string `json:"oldPassword,omitempty" bson:"oldPassword,omitempty"`
 	NewPassword *string `json:"newPassword,omitempty" bson:"newPassword,omitempty"`
 }
 

@@ -278,27 +278,14 @@ func (o *AuthController) ResetUserPassword(resetUserPasswordBody dt.ResetUserPas
 	}
 
 	if exist {
-		if resetUserPasswordBody.OldPassword != nil && resetUserPasswordBody.NewPassword != nil {
-			user, err := o.Handler.Orms.User.GetOneWithPasswordById(user.Id)
+		if resetUserPasswordBody.NewPassword != nil {
+			hashedPassword, err := hashAndSalt(*resetUserPasswordBody.NewPassword)
 			if err != nil {
 				o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
 
 				return
 			}
-			if !comparePasswords(user.Password, *resetUserPasswordBody.OldPassword) {
-				o.ResponseBuilder.SetError(http.StatusInternalServerError, constants.ErrorOldPasswordMismatch).ServeJSON()
-
-				return
-			} else {
-				hashedPassword, err := hashAndSalt(*resetUserPasswordBody.NewPassword)
-				if err != nil {
-					o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
-
-					return
-				}
-
-				userUpdateInModel.Password = &hashedPassword
-			}
+			userUpdateInModel.Password = &hashedPassword
 		}
 
 		updateResult, err := o.Handler.Orms.User.UpdateOneById(
