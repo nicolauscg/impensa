@@ -160,7 +160,7 @@ export const urlRequestResetUserPassword = () => ({
   manual: true
 });
 export const urlResetUserPassword = () => ({
-  url: `${baseUrl}/auth/requestreset`,
+  url: `${baseUrl}/auth/resetpassword`,
   method: "POST",
   type: RESPONSE_TYPE.OBJECT,
   manual: true

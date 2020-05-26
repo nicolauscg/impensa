@@ -53,7 +53,11 @@ export const App = ({ history }) => {
     }
   };
 
-  const skipNavbarPath = ["/verify"];
+  const skipNavbarPath = [
+    "/verify",
+    "/auth/resetpassword",
+    "auth/requestresetpassword"
+  ];
 
   useEffect(() => {
     refreshUserContext();

@@ -9,6 +9,7 @@ import GraphPage from "../GraphPage";
 import ImportExportPage from "../ImportExportPage";
 import VerifyUserPage from "../VerifyUserPage";
 import RequestResetPasswordPage from "../RequestResetPasswordPage";
+import ResetPasswordPage from "../ResetPasswordPage";
 
 export const routes = [
   {
@@ -69,6 +70,12 @@ export const routes = [
     component: RequestResetPasswordPage,
     exact: true,
     path: "/auth/requestresetpassword",
+    protected: false
+  },
+  {
+    component: ResetPasswordPage,
+    exact: true,
+    path: "/auth/resetpassword",
     protected: false
   },
   { component: NotFoundPage }
