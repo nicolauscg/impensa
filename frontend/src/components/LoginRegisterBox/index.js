@@ -14,7 +14,8 @@ import {
   FormControlLabel,
   Checkbox,
   FormControl,
-  FormHelperText
+  FormHelperText,
+  Link
 } from "@material-ui/core";
 
 const TabPanel = props => {
@@ -48,7 +49,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
+const LoginRegisterBox = ({ formikLogin, formikRegister, history }) => {
   const classes = useStyles();
   const theme = useTheme();
   const [value, setValue] = React.useState(0);
@@ -121,6 +122,7 @@ const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
               </FormHelperText>
             </FormControl>
             <FormControlLabel
+              className="d-block"
               control={
                 <Checkbox
                   checked={formikLogin.values.rememberMe}
@@ -131,6 +133,15 @@ const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
               }
               label="remember me"
             />
+            <Link
+              component="button"
+              variant="body2"
+              onClick={() => {
+                history.push("/resetpassword");
+              }}
+            >
+              forget password
+            </Link>
             <Button
               variant="contained"
               color="primary"

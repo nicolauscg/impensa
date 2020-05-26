@@ -153,6 +153,18 @@ export const urlVerifyUser = () => ({
   type: RESPONSE_TYPE.OBJECT,
   manual: true
 });
+export const urlRequestResetUserPassword = () => ({
+  url: `${baseUrl}/auth/requestreset`,
+  method: "POST",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlResetUserPassword = () => ({
+  url: `${baseUrl}/auth/requestreset`,
+  method: "POST",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
 
 /*
   wrapper for fetching data that returns

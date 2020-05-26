@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import { useFormik } from "formik";
 import { useDropzone } from "react-dropzone";
 import * as R from "ramda";
@@ -9,10 +9,17 @@ import {
   Avatar,
   FormControl,
   FormHelperText,
-  Typography
+  Typography,
+  Snackbar
 } from "@material-ui/core";
+import MuiAlert from "@material-ui/lab/Alert";
 import { makeStyles } from "@material-ui/core/styles";
-import { useAxiosSafely, urlUpdateUser } from "../../api";
+
+import {
+  useAxiosSafely,
+  urlUpdateUser,
+  urlRequestResetUserPassword
+} from "../../api";
 import {
   cleanEmptyFromObject,
   transformValuesToUpdateIdPayload,
@@ -55,13 +62,34 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 export default function ProfilePage() {
   const classes = useStyles();
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+  const handleOpenSnackbar = () => {
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setSnackbarOpen(false);
+  };
 
   const { data: userData, refreshUserContext } = useContext(UserContext);
   const username = userData.username;
 
   const [, updateUser] = useAxiosSafely(urlUpdateUser());
+  const [, requestChangeUserPassword] = useAxiosSafely(
+    urlRequestResetUserPassword()
+  );
   const formikUser = useFormik({
     initialValues: {
       ...userData,
@@ -101,6 +129,15 @@ export default function ProfilePage() {
   return (
     <>
       <h1>{username}&apos;s profile</h1>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success">
+          email to reset password sent!
+        </Alert>
+      </Snackbar>
       <form onSubmit={formikUser.handleSubmit}>
         <div {...getRootProps()} className={classes.pictureField}>
           <input {...getInputProps()} />
@@ -184,6 +221,23 @@ export default function ProfilePage() {
           Update
         </Button>
       </form>
+
+      <Button
+        variant="contained"
+        color="secondary"
+        type="submit"
+        fullWidth={true}
+        className="mt-5"
+        onClick={() =>
+          requestChangeUserPassword({
+            data: {
+              email: R.propOr("", "email", userData)
+            }
+          }).then(handleOpenSnackbar)
+        }
+      >
+        request reset password
+      </Button>
     </>
   );
 }
