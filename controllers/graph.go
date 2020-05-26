@@ -90,17 +90,17 @@ func (o *GraphController) MailTransactionSummary(
 			dataSummaryType = "Account"
 			fileName = "summaryAccounts"
 		}
-
 		pieData := make(map[string]interface{})
-		for categoryName, amount := range data {
-			pieData[categoryName] = amount
+		for key, amount := range data {
+			pieData[key] = amount
 		}
 		pie := charts.NewPie()
 		pie.SetGlobalOptions(charts.TitleOpts{
-			Title: fmt.Sprintf("Transaction per %v %v - %v", dataSummaryType, dateTimeStart, dateTimeEnd),
+			Title: fmt.Sprintf("Transaction per %v", dataSummaryType),
 		})
-		pie.Add("pie", pieData)
+		pie.Add("pie", pieData, charts.LabelTextOpts{Show: true, Formatter: "{b}: {c}"})
 		buffer := bytes.NewBufferString("")
+
 		pie.Render(buffer)
 		mailMessage.AddBufferAttachment(fmt.Sprintf("%v.html", fileName), buffer.Bytes())
 	}
