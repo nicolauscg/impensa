@@ -100,11 +100,6 @@ func init() {
 				&controllers.GraphController{controllers.BaseController{Handler: handler}},
 			),
 		),
-		beego.NSNamespace("/mail",
-			beego.NSInclude(
-				&controllers.MailController{controllers.BaseController{Handler: handler}},
-			),
-		),
 	)
 
 	beego.AddNamespace(ns)
