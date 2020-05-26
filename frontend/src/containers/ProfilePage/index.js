@@ -7,8 +7,6 @@ import {
   Button,
   TextField,
   Avatar,
-  FormControl,
-  FormHelperText,
   Typography,
   Snackbar
 } from "@material-ui/core";
@@ -92,9 +90,7 @@ export default function ProfilePage() {
   );
   const formikUser = useFormik({
     initialValues: {
-      ...userData,
-      oldPassword: "",
-      newPassword: ""
+      ...userData
     },
     enableReinitialize: true,
     onSubmit: (values, formikBag) => {
@@ -103,17 +99,10 @@ export default function ProfilePage() {
           cleanEmptyFromObject,
           transformValuesToUpdateIdPayload
         )(values)
-      })
-        .then(() => {
-          refreshUserContext();
-          formikBag.resetForm();
-        })
-        .catch(err => {
-          const errorMessage = err.response.data.error.message;
-          if (errorMessage.indexOf("password") !== -1) {
-            formikBag.setFieldError("oldPassword", errorMessage);
-          }
-        });
+      }).then(() => {
+        refreshUserContext();
+        formikBag.resetForm();
+      });
     }
   });
 
@@ -182,33 +171,6 @@ export default function ProfilePage() {
           type="text"
           onChange={formikUser.handleChange}
           value={formikUser.values.username}
-          fullWidth={true}
-        />
-        <FormControl
-          fullWidth={true}
-          error={R.hasPath(["oldPassword"], formikUser.errors)}
-        >
-          <TextField
-            id="oldPassword"
-            label="old password"
-            name="oldPassword"
-            type="password"
-            onChange={formikUser.handleChange}
-            value={formikUser.values.oldPassword}
-            fullWidth={true}
-            error={R.hasPath(["oldPassword"], formikUser.errors)}
-          />
-          <FormHelperText>
-            {R.propOr("", "oldPassword", formikUser.errors)}
-          </FormHelperText>
-        </FormControl>
-        <TextField
-          id="newPassword"
-          label="new password"
-          name="newPassword"
-          type="password"
-          onChange={formikUser.handleChange}
-          value={formikUser.values.newPassword}
           fullWidth={true}
         />
         <Button
