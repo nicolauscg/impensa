@@ -193,15 +193,6 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:MailController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:MailController"],
-        beego.ControllerComments{
-            Method: "SendMail",
-            Router: `/send`,
-            AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
     beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"] = append(beego.GlobalControllerRouter["github.com/nicolauscg/impensa/controllers:TransactionController"],
         beego.ControllerComments{
             Method: "CreateTransaction",

@@ -239,7 +239,18 @@ func (o *AuthController) RequestResetUserPassword(requestResetUserPasswordBody d
 
 		return
 	}
-	_, _, err = o.Handler.Orms.ResetUserPassword.InsertOne(user.Id)
+	_, verifyKey, err := o.Handler.Orms.ResetUserPassword.InsertOne(user.Id)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusForbidden, err.Error()).ServeJSON()
+
+		return
+	}
+	resetPasswordLink := fmt.Sprintf("%v/auth/resetpassword?email=%v&verifyKey=%v", os.Getenv(constants.EnvFrontendUrl), user.Email, verifyKey)
+	_, err = o.Handler.Orms.MailGun.SendMail(dt.MailParam{
+		Recipient: user.Email,
+		Subject:   "request reset password of Impensa account",
+		Body:      fmt.Sprintf(`click <a href="%v">here</a> to reset your password`, resetPasswordLink),
+	})
 	if err != nil {
 		o.ResponseBuilder.SetError(http.StatusForbidden, err.Error()).ServeJSON()
 
