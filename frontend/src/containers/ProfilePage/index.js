@@ -8,9 +8,9 @@ import {
   TextField,
   Avatar,
   FormControl,
-  FormHelperText
+  FormHelperText,
+  Typography
 } from "@material-ui/core";
-
 import { makeStyles } from "@material-ui/core/styles";
 import { useAxiosSafely, urlUpdateUser } from "../../api";
 import {
@@ -46,6 +46,12 @@ const useStyles = makeStyles(theme => ({
     transition: ".5s ease",
     fontWeight: "bold",
     textShadow: "white 0px 0px 10px"
+  },
+  accountVerifiedStatus: {
+    color: "#4caf50"
+  },
+  accountUnverifiedStatus: {
+    color: "#e91e63"
   }
 }));
 
@@ -90,6 +96,7 @@ export default function ProfilePage() {
     );
   }, []);
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
+  const accountIsVerified = R.propOr(false, "verified", userData);
 
   return (
     <>
@@ -110,6 +117,18 @@ export default function ProfilePage() {
             click or drag and drop PNG to edit
           </p>
         </div>
+        <Typography
+          variant="subtitle2"
+          component="p"
+          className="my-2"
+          classes={{
+            root: accountIsVerified
+              ? classes.accountVerifiedStatus
+              : classes.accountUnverifiedStatus
+          }}
+        >
+          {accountIsVerified ? "account verified" : "account unverified"}
+        </Typography>
         <TextField
           id="email"
           label="email"
