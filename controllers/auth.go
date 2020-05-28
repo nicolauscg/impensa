@@ -375,7 +375,7 @@ func (o *AuthController) OauthGoogleCallback(state *string, code *string) {
 	}
 	verifyLink := fmt.Sprintf("%v/auth/verify?userId=%v&verifyKey=%v", os.Getenv(constants.EnvFrontendUrl), user.Id.Hex(), verifyKey)
 	_, err = o.Handler.Orms.MailGun.SendMail(dt.MailParam{
-		Recipient: newUser.Email,
+		Recipient: user.Email,
 		Subject:   "verify Impensa account",
 		Body:      fmt.Sprintf(`click <a href="%v">here</a> to verify your account`, verifyLink),
 	})
