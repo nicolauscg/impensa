@@ -15,6 +15,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 type Handler struct {
@@ -30,6 +32,7 @@ type Entity struct {
 	VerifyAccount     models.VerifyUserOrmer
 	ResetUserPassword models.ResetUserPasswordOrmer
 	MailGun           models.MailOrmer
+	GooglOauth        *oauth2.Config
 }
 
 func NewHandler(databaseName string, connString string) (handler *Handler, err error) {
@@ -68,6 +71,13 @@ func NewHandler(databaseName string, connString string) (handler *Handler, err e
 		models.NewVerifyUserOrm(handler.db),
 		models.NewResetUserPassword(handler.db),
 		models.NewMailOrmer(mailgun.NewMailgun("mail.impensa.nicolauscg.me", os.Getenv(constants.EnvMailgunApi))),
+		&oauth2.Config{
+			RedirectURL:  fmt.Sprintf("%v/auth/google/callback", os.Getenv(constants.EnvFrontendUrl)),
+			ClientID:     os.Getenv(constants.EnvGoogleOauthClientId),
+			ClientSecret: os.Getenv(constants.EnvGoogleOauthClientSecret),
+			Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
+			Endpoint:     google.Endpoint,
+		},
 	}
 
 	if handler == nil {

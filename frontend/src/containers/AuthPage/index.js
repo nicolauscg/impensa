@@ -3,11 +3,13 @@ import { useFormik } from "formik";
 import useAxios from "axios-hooks";
 import * as R from "ramda";
 
+import { Button } from "@material-ui/core";
+
 import LoginRegisterBox, {
   getPasswordDifficulty
 } from "../../components/LoginRegisterBox";
 import { isLoggedIn } from "../../auth";
-import { urlLogin, urlRegister } from "../../api";
+import { urlLogin, urlRegister, urlGoogleLogin } from "../../api";
 import { UserContext } from "../../containers/App/index";
 
 const AuthPage = ({ history }) => {
@@ -18,6 +20,7 @@ const AuthPage = ({ history }) => {
   const { refreshUserContext } = useContext(UserContext);
   const [, postLogin] = useAxios(urlLogin(), { manual: true });
   const [, postRegister] = useAxios(urlRegister(), { manual: true });
+  const [, postGoogleLogin] = useAxios(urlGoogleLogin(), { manual: true });
 
   const passedProp = {
     history,
@@ -104,6 +107,19 @@ const AuthPage = ({ history }) => {
     <div className="align-self-center">
       <h1>Impensa</h1>
       <LoginRegisterBox {...passedProp} />
+      <Button
+        variant="contained"
+        onClick={() => {
+          postGoogleLogin().then(res => {
+            const url = R.pathOr("", ["data", "data"], res);
+            if (url) {
+              window.location.assign(url);
+            }
+          });
+        }}
+      >
+        sign in with google
+      </Button>
     </div>
   );
 };

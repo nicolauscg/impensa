@@ -10,6 +10,7 @@ import ImportExportPage from "../ImportExportPage";
 import VerifyUserPage from "../VerifyUserPage";
 import RequestResetPasswordPage from "../RequestResetPasswordPage";
 import ResetPasswordPage from "../ResetPasswordPage";
+import GoogleOauthCallback from "../GoogleOauthCallback";
 
 export const routes = [
   {
@@ -76,6 +77,12 @@ export const routes = [
     component: ResetPasswordPage,
     exact: true,
     path: "/auth/resetpassword",
+    protected: false
+  },
+  {
+    component: GoogleOauthCallback,
+    exact: true,
+    path: "/auth/google/callback",
     protected: false
   },
   { component: NotFoundPage }

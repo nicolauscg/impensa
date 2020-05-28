@@ -36,8 +36,12 @@ func init() {
 		mgoConnString, _ = dockerSecrets.Get("IMPENSA_BE_MGOCONNSTRING")
 		apiSecret, _ := dockerSecrets.Get("IMPENSA_BE_API_SECRET")
 		mailgunApi, _ := dockerSecrets.Get("IMPENSA_BE_MAILGUN_API")
+		googleOauthId, _ := dockerSecrets.Get("IMPENSA_BE_GOOGLE_OAUTH_CLIENT_ID")
+		googleOauthSecret, _ := dockerSecrets.Get("IMPENSA_BE_GOOGLE_OAUTH_CLIENT_SECRET")
 		os.Setenv(constants.EnvApiSecret, apiSecret)
 		os.Setenv(constants.EnvMailgunApi, mailgunApi)
+		os.Setenv(constants.EnvGoogleOauthClientId, googleOauthId)
+		os.Setenv(constants.EnvGoogleOauthClientSecret, googleOauthSecret)
 	} else {
 		beego.Info(fmt.Sprintf("load development environment"))
 		if _, err := os.Stat(path.Join(projectDirPath, constants.EnvDevLocalFileName)); err != nil {

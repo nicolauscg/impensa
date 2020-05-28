@@ -1,9 +1,13 @@
 package controllers
 
 import (
+	golangContext "context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -302,4 +306,103 @@ func (o *AuthController) ResetUserPassword(resetUserPasswordBody dt.ResetUserPas
 	} else {
 		o.ResponseBuilder.SetError(http.StatusForbidden, constants.ErrorIncorrectVerifyKey).ServeJSON()
 	}
+}
+
+// @Title login with google
+// @router /google/login [get]
+func (o *AuthController) OauthGoogleLogin() {
+	var expiration = time.Now().Add(30 * 24 * time.Hour)
+	randomBytes := make([]byte, 16)
+	rand.Read(randomBytes)
+	state := base64.URLEncoding.EncodeToString(randomBytes)
+	o.Ctx.SetCookie("impensa_oauthstate", state, expiration)
+	redirectLink := o.Handler.Orms.GooglOauth.AuthCodeURL(state)
+
+	o.ResponseBuilder.SetData(redirectLink).ServeJSON()
+}
+
+// @Title callback with google
+// @Param state  query string true  "state"
+// @Param code  query string true  "code"
+// @router /google/callback [get]
+func (o *AuthController) OauthGoogleCallback(state *string, code *string) {
+	oauthState := o.Ctx.GetCookie("impensa_oauthstate")
+	if *state != oauthState {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, "invalid oauth google state").ServeJSON()
+		return
+	}
+	data, err := o.getUserDataFromGoogle(*code)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+		return
+	}
+	var userData dt.GoogleOauthUser
+	json.Unmarshal(data, &userData)
+	_, err = o.Handler.Orms.User.GetOneByEmail(userData.Email)
+	if err == mongo.ErrNoDocuments {
+		_, err = o.Handler.Orms.User.InsertOne(dt.AuthRegister{
+			Email:    userData.Email,
+			Username: userData.Email,
+			GoogleId: &userData.Id,
+		})
+		if err != nil {
+			o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+			return
+		}
+	}
+	user, err := o.Handler.Orms.User.GetOneByEmailAndGoogleId(userData.Email, userData.Id)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+		return
+	}
+
+	jwtExpiry := time.Hour * 24 * 7 * 4
+	cookieExpiry := 60 * 60 * 24 * 7 * 4
+	token, err := createJwtToken(user.Id, jwtExpiry)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, err.Error()).ServeJSON()
+
+		return
+	}
+	authPayloadJson, _ := json.Marshal(dt.AuthPayload{user.Id, user.Username, token})
+	o.Ctx.SetCookie("impensa", string(authPayloadJson), cookieExpiry)
+
+	_, verifyKey, err := o.Handler.Orms.VerifyAccount.InsertOne(user.Id)
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusInternalServerError, err.Error()).ServeJSON()
+
+		return
+	}
+	verifyLink := fmt.Sprintf("%v/auth/verify?userId=%v&verifyKey=%v", os.Getenv(constants.EnvFrontendUrl), user.Id.Hex(), verifyKey)
+	_, err = o.Handler.Orms.MailGun.SendMail(dt.MailParam{
+		Recipient: newUser.Email,
+		Subject:   "verify Impensa account",
+		Body:      fmt.Sprintf(`click <a href="%v">here</a> to verify your account`, verifyLink),
+	})
+	if err != nil {
+		o.ResponseBuilder.SetError(http.StatusUnauthorized, err.Error()).ServeJSON()
+
+		return
+	}
+
+	o.ResponseBuilder.SetData(dt.AuthPayload{user.Id, user.Username, token}).ServeJSON()
+}
+
+func (o *AuthController) getUserDataFromGoogle(code string) ([]byte, error) {
+	token, err := o.Handler.Orms.GooglOauth.Exchange(golangContext.TODO(), code)
+	if err != nil {
+		return nil, fmt.Errorf("code exchange wrong: %s", err.Error())
+	}
+	oauthGoogleUrlAPI := "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+	response, err := http.Get(oauthGoogleUrlAPI + token.AccessToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
+	}
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed read response: %s", err.Error())
+	}
+
+	return contents, nil
 }

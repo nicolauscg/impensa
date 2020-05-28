@@ -9,10 +9,11 @@ type AuthLogin struct {
 }
 
 type AuthRegister struct {
-	Username string `json:"username,omitempty" bson:"username,omitempty"`
-	Email    string `json:"email,omitempty" bson:"email,omitempty"`
-	Password string `json:"password,omitempty" bson:"password,omitempty"`
-	Verified *bool  `json:"verified,omitempty" bson:"verified,omitempty"`
+	Username string  `json:"username,omitempty" bson:"username,omitempty"`
+	Email    string  `json:"email,omitempty" bson:"email,omitempty"`
+	Password string  `json:"password,omitempty" bson:"password,omitempty"`
+	Verified *bool   `json:"verified,omitempty" bson:"verified,omitempty"`
+	GoogleId *string `json:"googleId,omitempty" bson:"googleId,omitempty"`
 }
 
 type AuthPayload struct {

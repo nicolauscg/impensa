@@ -171,6 +171,18 @@ export const urlSendTransactionSummaryMail = () => ({
   type: RESPONSE_TYPE.OBJECT,
   manual: true
 });
+export const urlGoogleLogin = () => ({
+  url: `${baseUrl}/auth/google/login`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlGoogleCallback = () => ({
+  url: `${baseUrl}/auth/google/callback`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
 
 /*
   wrapper for fetching data that returns
