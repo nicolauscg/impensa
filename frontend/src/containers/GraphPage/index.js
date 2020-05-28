@@ -50,13 +50,15 @@ export default function GraphPage() {
 
   const formikSummaryMail = useFormik({
     initialValues: {
-      email: "",
-      dateTimeStart: getStartOfCurrentMonthAsString(),
-      dateTimeEnd: getEndOfCurrentMonthAsString()
+      email: ""
     },
     onSubmit: (values, formikBag) => {
       sendTransactionSummaryMail({
-        params: values
+        params: {
+          email: values.email,
+          dateTimeStart: getStartOfCurrentMonthAsString(),
+          dateTimeEnd: getEndOfCurrentMonthAsString()
+        }
       }).then(() => {
         setModalIsOpen(false);
         formikBag.resetForm();
