@@ -181,7 +181,7 @@ func (o *GraphController) getTransactionAccountSummaryData(
 	}
 	accountNameToAmountMap := make(map[string]float32)
 	for _, transaction := range transactionWithInferredRecurrences {
-		if transaction.Category != nil {
+		if transaction.Account != nil {
 			accountNameToAmountMap[*transaction.Account] += *transaction.Amount
 		}
 	}
