@@ -33,3 +33,9 @@ secrets:
     file: impensa_be_api_secret.txt
   IMPENSA_BE_MGOCONNSTRING:
     file: impensa_be_mgoconnstring.txt
+  IMPENSA_BE_MAILGUN_API:
+    file: impensa_be_mailgun_api.txt
+  IMPENSA_BE_GOOGLE_OAUTH_CLIENT_ID:
+    file: impensa_be_google_oauth_client_id.txt
+  IMPENSA_BE_GOOGLE_OAUTH_CLIENT_SECRET:
+    file: impensa_be_google_oauth_client_secret.txt

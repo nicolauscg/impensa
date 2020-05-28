@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import { useFormik } from "formik";
 import { useDropzone } from "react-dropzone";
 import * as R from "ramda";
@@ -7,12 +7,17 @@ import {
   Button,
   TextField,
   Avatar,
-  FormControl,
-  FormHelperText
+  Typography,
+  Snackbar
 } from "@material-ui/core";
-
+import MuiAlert from "@material-ui/lab/Alert";
 import { makeStyles } from "@material-ui/core/styles";
-import { useAxiosSafely, urlUpdateUser } from "../../api";
+
+import {
+  useAxiosSafely,
+  urlUpdateUser,
+  urlRequestResetUserPassword
+} from "../../api";
 import {
   cleanEmptyFromObject,
   transformValuesToUpdateIdPayload,
@@ -46,21 +51,46 @@ const useStyles = makeStyles(theme => ({
     transition: ".5s ease",
     fontWeight: "bold",
     textShadow: "white 0px 0px 10px"
+  },
+  accountVerifiedStatus: {
+    color: "#4caf50"
+  },
+  accountUnverifiedStatus: {
+    color: "#e91e63"
   }
 }));
 
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 export default function ProfilePage() {
   const classes = useStyles();
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+  const handleOpenSnackbar = () => {
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setSnackbarOpen(false);
+  };
 
   const { data: userData, refreshUserContext } = useContext(UserContext);
   const username = userData.username;
 
   const [, updateUser] = useAxiosSafely(urlUpdateUser());
+  const [, requestChangeUserPassword] = useAxiosSafely(
+    urlRequestResetUserPassword()
+  );
   const formikUser = useFormik({
     initialValues: {
-      ...userData,
-      oldPassword: "",
-      newPassword: ""
+      ...userData
     },
     enableReinitialize: true,
     onSubmit: (values, formikBag) => {
@@ -69,17 +99,10 @@ export default function ProfilePage() {
           cleanEmptyFromObject,
           transformValuesToUpdateIdPayload
         )(values)
-      })
-        .then(() => {
-          refreshUserContext();
-          formikBag.resetForm();
-        })
-        .catch(err => {
-          const errorMessage = err.response.data.error.message;
-          if (errorMessage.indexOf("password") !== -1) {
-            formikBag.setFieldError("oldPassword", errorMessage);
-          }
-        });
+      }).then(() => {
+        refreshUserContext();
+        formikBag.resetForm();
+      });
     }
   });
 
@@ -90,10 +113,20 @@ export default function ProfilePage() {
     );
   }, []);
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
+  const accountIsVerified = R.propOr(false, "verified", userData);
 
   return (
     <>
       <h1>{username}&apos;s profile</h1>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success">
+          email to reset password sent!
+        </Alert>
+      </Snackbar>
       <form onSubmit={formikUser.handleSubmit}>
         <div {...getRootProps()} className={classes.pictureField}>
           <input {...getInputProps()} />
@@ -110,6 +143,18 @@ export default function ProfilePage() {
             click or drag and drop PNG to edit
           </p>
         </div>
+        <Typography
+          variant="subtitle2"
+          component="p"
+          className="my-2"
+          classes={{
+            root: accountIsVerified
+              ? classes.accountVerifiedStatus
+              : classes.accountUnverifiedStatus
+          }}
+        >
+          {accountIsVerified ? "account verified" : "account unverified"}
+        </Typography>
         <TextField
           id="email"
           label="email"
@@ -128,33 +173,6 @@ export default function ProfilePage() {
           value={formikUser.values.username}
           fullWidth={true}
         />
-        <FormControl
-          fullWidth={true}
-          error={R.hasPath(["oldPassword"], formikUser.errors)}
-        >
-          <TextField
-            id="oldPassword"
-            label="old password"
-            name="oldPassword"
-            type="password"
-            onChange={formikUser.handleChange}
-            value={formikUser.values.oldPassword}
-            fullWidth={true}
-            error={R.hasPath(["oldPassword"], formikUser.errors)}
-          />
-          <FormHelperText>
-            {R.propOr("", "oldPassword", formikUser.errors)}
-          </FormHelperText>
-        </FormControl>
-        <TextField
-          id="newPassword"
-          label="new password"
-          name="newPassword"
-          type="password"
-          onChange={formikUser.handleChange}
-          value={formikUser.values.newPassword}
-          fullWidth={true}
-        />
         <Button
           variant="contained"
           color="primary"
@@ -165,6 +183,23 @@ export default function ProfilePage() {
           Update
         </Button>
       </form>
+
+      <Button
+        variant="contained"
+        color="secondary"
+        type="submit"
+        fullWidth={true}
+        className="mt-5"
+        onClick={() =>
+          requestChangeUserPassword({
+            data: {
+              email: R.propOr("", "email", userData)
+            }
+          }).then(handleOpenSnackbar)
+        }
+      >
+        request reset password
+      </Button>
     </>
   );
 }

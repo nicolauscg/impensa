@@ -1,6 +1,7 @@
 import React from "react";
 import SwipeableViews from "react-swipeable-views";
 import * as R from "ramda";
+import * as zxcvbn from "zxcvbn";
 
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import {
@@ -14,8 +15,29 @@ import {
   FormControlLabel,
   Checkbox,
   FormControl,
-  FormHelperText
+  FormHelperText,
+  Link
 } from "@material-ui/core";
+
+export const getPasswordDifficulty = password => {
+  const { score } = zxcvbn(password);
+  if (score < 2) {
+    return {
+      score: 0,
+      message: "low"
+    };
+  } else if (score < 4) {
+    return {
+      score: 1,
+      message: "medium"
+    };
+  }
+
+  return {
+    score: 2,
+    message: "high"
+  };
+};
 
 const TabPanel = props => {
   const { children, value, index, ...other } = props;
@@ -48,7 +70,12 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
+const LoginRegisterBox = ({
+  formikLogin,
+  formikRegister,
+  history,
+  disableSubmit
+}) => {
   const classes = useStyles();
   const theme = useTheme();
   const [value, setValue] = React.useState(0);
@@ -121,6 +148,7 @@ const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
               </FormHelperText>
             </FormControl>
             <FormControlLabel
+              className="d-block"
               control={
                 <Checkbox
                   checked={formikLogin.values.rememberMe}
@@ -131,6 +159,15 @@ const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
               }
               label="remember me"
             />
+            <Link
+              component="button"
+              variant="body2"
+              onClick={() => {
+                history.push("/auth/requestresetpassword");
+              }}
+            >
+              forget password
+            </Link>
             <Button
               variant="contained"
               color="primary"
@@ -144,39 +181,66 @@ const LoginRegisterBox = ({ formikLogin, formikRegister }) => {
         </TabPanel>
         <TabPanel value={value} index={1} dir={theme.direction}>
           <form onSubmit={formikRegister.handleSubmit}>
-            <TextField
-              id="email"
-              label="email"
-              name="email"
-              type="email"
-              onChange={formikRegister.handleChange}
-              value={formikRegister.values.email}
+            <FormControl
               fullWidth={true}
-            />
-            <TextField
-              id="username"
-              label="username"
-              name="username"
-              type="text"
-              onChange={formikRegister.handleChange}
-              value={formikRegister.values.username}
+              error={R.hasPath(["email"], formikRegister.errors)}
+            >
+              <TextField
+                id="email"
+                label="email"
+                name="email"
+                type="email"
+                onChange={formikRegister.handleChange}
+                value={formikRegister.values.email}
+                fullWidth={true}
+                error={R.hasPath(["email"], formikRegister.errors)}
+              />
+              <FormHelperText id="my-helper-text">
+                {R.propOr("", "email", formikRegister.errors)}
+              </FormHelperText>
+            </FormControl>
+            <FormControl
               fullWidth={true}
-            />
-            <TextField
-              id="password"
-              label="password"
-              name="password"
-              type="password"
-              onChange={formikRegister.handleChange}
-              value={formikRegister.values.password}
+              error={R.hasPath(["email"], formikRegister.errors)}
+            >
+              <TextField
+                id="username"
+                label="username"
+                name="username"
+                type="text"
+                onChange={formikRegister.handleChange}
+                value={formikRegister.values.username}
+                fullWidth={true}
+                error={R.hasPath(["username"], formikRegister.errors)}
+              />
+              <FormHelperText id="my-helper-text">
+                {R.propOr("", "username", formikRegister.errors)}
+              </FormHelperText>
+            </FormControl>
+            <FormControl
               fullWidth={true}
-            />
+              error={R.hasPath(["password"], formikRegister.errors)}
+            >
+              <TextField
+                id="password"
+                label="password"
+                name="password"
+                type="password"
+                onChange={formikRegister.handleChange}
+                value={formikRegister.values.password}
+                fullWidth={true}
+              />
+              <FormHelperText id="my-helper-text">
+                {R.propOr("", "password", formikRegister.errors)}
+              </FormHelperText>
+            </FormControl>
             <Button
               variant="contained"
               color="primary"
               type="submit"
               fullWidth={true}
               className="mt-5"
+              disabled={disableSubmit}
             >
               Register
             </Button>

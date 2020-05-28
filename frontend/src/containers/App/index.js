@@ -53,6 +53,12 @@ export const App = ({ history }) => {
     }
   };
 
+  const skipNavbarPath = [
+    "/auth/verify",
+    "/auth/resetpassword",
+    "/auth/requestresetpassword"
+  ];
+
   useEffect(() => {
     refreshUserContext();
   }, []);
@@ -66,7 +72,8 @@ export const App = ({ history }) => {
         }}
       >
         <Grid container className={classes.root}>
-          {isLoggedIn() ? (
+          {isLoggedIn() &&
+          !skipNavbarPath.includes(history.location.pathname) ? (
             <>
               <Grid container item xs={2} direction={"column"}>
                 <Navbar history={history} />

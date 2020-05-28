@@ -11,9 +11,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  FormControl
+  FormControl,
+  FormControlLabel,
+  Checkbox
 } from "@material-ui/core";
 import { KeyboardDatePicker } from "@material-ui/pickers";
+
+import PlacesAutocomplete from "../../components/PlacesAutocomplete";
 
 const useStyles = makeStyles(theme => ({
   box: {
@@ -109,7 +113,66 @@ export const FormFields = {
         </Select>
       </FormControl>
     );
-  }
+  },
+  selectFieldFromPropsData: ({
+    label,
+    name,
+    options,
+    optionDisplayer,
+    formControlProps = {},
+    inputLabelProps = {},
+    selectProps = {}
+  }) => (formik, classes) => {
+    const uniqueId = `${label}-${name}-${cyrpto
+      .randomBytes(4)
+      .toString("hex")}`;
+
+    return (
+      <FormControl
+        className={classes.formControl}
+        fullWidth={true}
+        {...formControlProps}
+      >
+        <InputLabel id={uniqueId} {...inputLabelProps}>
+          {label}
+        </InputLabel>
+        <Select
+          labelId={uniqueId}
+          value={formik.values[name]}
+          name={name}
+          onChange={formik.handleChange}
+          {...selectProps}
+        >
+          {options.map(option => (
+            <MenuItem value={option.id} key={option.id}>
+              {optionDisplayer(option)}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    );
+  },
+  placesAutocompleteField: ({ label, name }) => formik => (
+    <PlacesAutocomplete
+      label={label}
+      name={name}
+      value={formik.values[name]}
+      handleValueChange={val => formik.setFieldValue(name, val)}
+    />
+  ),
+  checkBoxField: ({ label, name }) => formik => (
+    <FormControlLabel
+      control={
+        <Checkbox
+          checked={formik.values[name]}
+          onChange={formik.handleChange}
+          name={name}
+          color="primary"
+        />
+      }
+      label={label}
+    />
+  )
 };
 
 export default function CreateOrEditModal({

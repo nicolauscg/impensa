@@ -12,6 +12,8 @@ type User struct {
 	Email    string             `json:"email" bson:"email"`
 	Password string             `json:"password" bson:"password"`
 	Picture  string             `json:"picture" bson:"picture"`
+	Verified bool               `json:"verified" bson:"verified"`
+	GoogleId string             `json:"googleId" bson:"googleId"`
 }
 
 type UserItem struct {
@@ -19,6 +21,7 @@ type UserItem struct {
 	Username string             `json:"username" bson:"username"`
 	Email    string             `json:"email" bson:"email"`
 	Picture  string             `json:"picture" bson:"picture"`
+	Verified bool               `json:"verified" bson:"verified"`
 }
 
 func (u *User) String() string {
@@ -31,11 +34,9 @@ type UserUpdate struct {
 }
 
 type UserUpdateFields struct {
-	Username    *string `json:"username,omitempty" bson:"username,omitempty"`
-	Email       *string `json:"email,omitempty" bson:"email,omitempty"`
-	OldPassword *string `json:"oldPassword,omitempty" bson:"oldPassword,omitempty"`
-	NewPassword *string `json:"newPassword,omitempty" bson:"newPassword,omitempty"`
-	Picture     *string `json:"picture,omitempty" bson:"picture,omitempty"`
+	Username *string `json:"username,omitempty" bson:"username,omitempty"`
+	Email    *string `json:"email,omitempty" bson:"email,omitempty"`
+	Picture  *string `json:"picture,omitempty" bson:"picture,omitempty"`
 }
 
 type UserUpdateFieldsInModel struct {
@@ -47,4 +48,11 @@ type UserUpdateFieldsInModel struct {
 
 type UserDelete struct {
 	Id primitive.ObjectID `json:"id" bson:"_id"`
+}
+
+type GoogleOauthUser struct {
+	Id            string `json:"id,omitempty" bson:"id,omitempty"`
+	Email         string `json:"email,omitempty" bson:"email,omitempty"`
+	VerifiedEmail bool   `json:"verified_email,omitempty" bson:"verified_email,omitempty"`
+	Picture       string `json:"picture,omitempty" bson:"picture,omitempty"`
 }

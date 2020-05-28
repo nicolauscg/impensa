@@ -14,7 +14,9 @@ import (
 
 type TransactionOrmer interface {
 	InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error)
+	InsertMany(inserts []interface{}) (*mongo.InsertManyResult, error)
 	GetMany(query dt.TransactionQuery) ([]*dt.Transaction, error)
+	GetManyNoObjectId(query dt.TransactionQuery) ([]*dt.TransactionNoObjectId, error)
 	GetSomeDescriptionsByPartialDescription(partialDescription *dt.TransactionDescriptionAutocomplete) ([]*dt.TransactionDescriptionAutocompleteResponse, error)
 	GetUserIdsByIds(ids []primitive.ObjectID) ([]primitive.ObjectID, error)
 	GetOneById(id primitive.ObjectID) (*dt.Transaction, error)
@@ -32,6 +34,10 @@ func NewTransactionOrm(db *mongo.Database) *transactionOrm {
 
 func (o *transactionOrm) InsertOne(insert dt.TransactionInsert) (*mongo.InsertOneResult, error) {
 	return o.transactionCollection.InsertOne(context.TODO(), insert)
+}
+
+func (o *transactionOrm) InsertMany(inserts []interface{}) (*mongo.InsertManyResult, error) {
+	return o.transactionCollection.InsertMany(context.TODO(), inserts)
 }
 
 func (o *transactionOrm) GetMany(query dt.TransactionQuery) (transactions []*dt.Transaction, err error) {
@@ -62,7 +68,87 @@ func (o *transactionOrm) GetMany(query dt.TransactionQuery) (transactions []*dt.
 		findOptions.SetLimit(int64(query.Limit))
 	}
 	findOptions.SetSort(bson.D{{"_id", 1}})
+
 	cur, err := o.transactionCollection.Find(context.TODO(), dbQuery, findOptions)
+	if err != nil {
+		return
+	}
+	err = cur.All(context.TODO(), &transactions)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (o *transactionOrm) GetManyNoObjectId(query dt.TransactionQuery) (transactions []*dt.TransactionNoObjectId, err error) {
+	dbQuery := bson.D{{"user", query.User}}
+	if query.AfterCursor != nil {
+		dbQuery = append(dbQuery, bson.E{"_id", bson.M{"$gt": &query.AfterCursor}})
+	}
+	if query.Description != nil {
+		dbQuery = append(dbQuery, bson.E{"description", bson.M{"$regex": fmt.Sprintf(".*%v.*", *query.Description), "$options": "i"}})
+	}
+	if query.Account != nil {
+		dbQuery = append(dbQuery, bson.E{"account", *query.Account})
+	}
+	if query.Category != nil {
+		dbQuery = append(dbQuery, bson.E{"category", *query.Category})
+	}
+	if query.AmountMoreThan != nil {
+		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$gt": *query.AmountMoreThan}})
+	}
+	if query.AmountLessThan != nil {
+		dbQuery = append(dbQuery, bson.E{"amount", bson.M{"$lt": *query.AmountLessThan}})
+	}
+	dbOuterQuery := bson.M{"$and": bson.A{
+		dbQuery,
+		bson.M{"$or": bson.A{
+			bson.M{"dateTime": bson.M{"$gt": *query.DateTimeStart, "$lt": *query.DateTimeEnd}},
+			bson.M{"isReccurent": true, "reccurenceLastDate": bson.M{"$gt": *query.DateTimeStart}},
+		}},
+	}}
+	findOptions := options.Find()
+	if query.Limit > 0 {
+		findOptions.SetLimit(int64(query.Limit))
+	} else if query.Limit == 0 {
+		findOptions.SetLimit(1000)
+	}
+	findOptions.SetSort(bson.D{{"dateTime", 1}})
+	cur, err := o.transactionCollection.Aggregate(context.TODO(), bson.A{
+		bson.M{"$match": dbOuterQuery},
+		bson.M{"$sort": findOptions.Sort},
+		bson.M{"$limit": findOptions.Limit},
+		bson.M{"$lookup": bson.D{
+			{"from", constants.CollAccounts},
+			{"let", bson.M{"accountId": "$account"}},
+			{"pipeline", bson.A{
+				bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$_id", "$$accountId"}}}},
+				bson.M{"$project": bson.M{"account_name": "$name", "_id": 0}},
+			}},
+			{"as", "fromAccount"},
+		}},
+		bson.M{"$replaceRoot": bson.M{"newRoot": bson.M{"$mergeObjects": bson.A{
+			bson.M{"$arrayElemAt": bson.A{"$fromAccount", 0}},
+			"$$ROOT",
+		}}}},
+		bson.M{"$lookup": bson.D{
+			{"from", constants.CollCategories},
+			{"let", bson.M{"categoryId": "$category"}},
+			{"pipeline", bson.A{
+				bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$_id", "$$categoryId"}}}},
+				bson.M{"$project": bson.M{"category_name": "$name", "_id": 0}},
+			}},
+			{"as", "fromCategory"},
+		}},
+		bson.M{"$replaceRoot": bson.M{"newRoot": bson.M{"$mergeObjects": bson.A{
+			bson.M{"$arrayElemAt": bson.A{"$fromCategory", 0}},
+			"$$ROOT",
+		}}}},
+		bson.M{"$addFields": bson.M{"account": "$account_name", "category": "$category_name"}},
+		bson.M{"$unset": bson.A{"account_name", "account_category", "fromAccount", "fromCategory", "user"}},
+	})
+
 	if err != nil {
 		return
 	}

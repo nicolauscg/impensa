@@ -39,6 +39,24 @@ export const urlGetAllTransactions = () => ({
   type: RESPONSE_TYPE.ARRAY,
   manual: true
 });
+export const urlGetAllTransactionsForTable = () => ({
+  url: `${baseUrl}/transaction/table`,
+  method: "GET",
+  type: RESPONSE_TYPE.ARRAY,
+  manual: true
+});
+export const urlGetEditTransaction = id => ({
+  url: `${baseUrl}/transaction/edit/${id}`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlGetCreateTransaction = () => ({
+  url: `${baseUrl}/transaction/create`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
 export const urlCreateTransaction = () => ({
   url: `${baseUrl}/transaction`,
   method: "POST",
@@ -115,6 +133,54 @@ export const urlGraphTransactionAccount = () => ({
   url: `${baseUrl}/graph/transaction/account`,
   method: "GET",
   type: RESPONSE_TYPE.ARRAY,
+  manual: true
+});
+export const urlImportTransaction = () => ({
+  url: `${baseUrl}/transaction/import`,
+  method: "POST",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlExportTransaction = () => ({
+  url: `${baseUrl}/transaction/export`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlVerifyUser = () => ({
+  url: `${baseUrl}/auth/verify`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlRequestResetUserPassword = () => ({
+  url: `${baseUrl}/auth/requestreset`,
+  method: "POST",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlResetUserPassword = () => ({
+  url: `${baseUrl}/auth/resetpassword`,
+  method: "POST",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlSendTransactionSummaryMail = () => ({
+  url: `${baseUrl}/graph/mail`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlGoogleLogin = () => ({
+  url: `${baseUrl}/auth/google/login`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
+  manual: true
+});
+export const urlGoogleCallback = () => ({
+  url: `${baseUrl}/auth/google/callback`,
+  method: "GET",
+  type: RESPONSE_TYPE.OBJECT,
   manual: true
 });
 

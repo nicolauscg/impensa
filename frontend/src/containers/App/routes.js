@@ -6,6 +6,11 @@ import AccountsPage from "../AccountsPage";
 import CategoriesPage from "../CategoriesPage";
 import ProfilePage from "../ProfilePage";
 import GraphPage from "../GraphPage";
+import ImportExportPage from "../ImportExportPage";
+import VerifyUserPage from "../VerifyUserPage";
+import RequestResetPasswordPage from "../RequestResetPasswordPage";
+import ResetPasswordPage from "../ResetPasswordPage";
+import GoogleOauthCallback from "../GoogleOauthCallback";
 
 export const routes = [
   {
@@ -49,6 +54,36 @@ export const routes = [
     exact: true,
     path: "/graph",
     protected: true
+  },
+  {
+    component: ImportExportPage,
+    exact: true,
+    path: "/importexport",
+    protected: true
+  },
+  {
+    component: VerifyUserPage,
+    exact: true,
+    path: "/auth/verify",
+    protected: false
+  },
+  {
+    component: RequestResetPasswordPage,
+    exact: true,
+    path: "/auth/requestresetpassword",
+    protected: false
+  },
+  {
+    component: ResetPasswordPage,
+    exact: true,
+    path: "/auth/resetpassword",
+    protected: false
+  },
+  {
+    component: GoogleOauthCallback,
+    exact: true,
+    path: "/auth/google/callback",
+    protected: false
   },
   { component: NotFoundPage }
 ];

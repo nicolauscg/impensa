@@ -9,3 +9,8 @@ type PieChartSliceInfo struct {
 	Label    string              `json:"label" bson:"label"`
 	Quantity float32             `json:"quantity" bson:"quantity"`
 }
+
+type PieChartSliceInfoWithoutId struct {
+	Label    string  `json:"label" bson:"label"`
+	Quantity float32 `json:"quantity" bson:"quantity"`
+}
