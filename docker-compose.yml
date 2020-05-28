@@ -10,6 +10,9 @@ services:
     secrets:
       - IMPENSA_BE_API_SECRET
       - IMPENSA_BE_MGOCONNSTRING
+      - IMPENSA_BE_MAILGUN_API
+      - IMPENSA_BE_GOOGLE_OAUTH_CLIENT_ID
+      - IMPENSA_BE_GOOGLE_OAUTH_CLIENT_SECRET
     volumes:
       - ./.env:/app/.env
 
