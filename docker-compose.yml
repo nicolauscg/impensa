@@ -21,15 +21,10 @@ services:
     restart: always
     ports:
       - "3000:80"
-  
-  nginx:
-    image: nginx:1.17-alpine
-    restart: always
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./nginx-conf:/etc/nginx/conf.d
+    environment: :
+      - VIRTUAL_HOST=impensa.nicolauscg.com
+      - LETSENCRYPT_HOST=impensa.nicolauscg.com
+      - VIRTUAL_PORT=3000
 
 secrets:
   IMPENSA_BE_API_SECRET:
