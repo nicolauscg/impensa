@@ -2,6 +2,8 @@ version: "3.1"
 services:
   backend:
     image: nicolausc/impensa-be-dev:latest
+    container_name: impensa-be-dev
+    hostname: impensa-be-dev
     restart: always
     ports:
       - "8080:8080"
@@ -15,16 +17,22 @@ services:
       - IMPENSA_BE_GOOGLE_OAUTH_CLIENT_SECRET
     volumes:
       - ./.env:/app/.env
+    networks:
+      - reverseproxy
 
   frontend:
     image: nicolausc/impensa-fe-dev:latest
+    container_name: impensa-fe-dev
+    hostname: impensa-fe-dev
     restart: always
     ports:
       - "3000:80"
-    environment: :
+    environment:
       - VIRTUAL_HOST=impensa.nicolauscg.com
       - LETSENCRYPT_HOST=impensa.nicolauscg.com
       - VIRTUAL_PORT=3000
+    networks:
+      - reverseproxy
 
 secrets:
   IMPENSA_BE_API_SECRET:
@@ -37,3 +45,8 @@ secrets:
     file: impensa_be_google_oauth_client_id.txt
   IMPENSA_BE_GOOGLE_OAUTH_CLIENT_SECRET:
     file: impensa_be_google_oauth_client_secret.txt
+
+networks:
+  reverseproxy:
+    external:
+      name: reverseproxy
