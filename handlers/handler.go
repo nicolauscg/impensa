@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -70,7 +71,7 @@ func NewHandler(databaseName string, connString string) (handler *Handler, err e
 		models.NewCategoryOrm(handler.db),
 		models.NewVerifyUserOrm(handler.db),
 		models.NewResetUserPassword(handler.db),
-		models.NewMailOrmer(mailgun.NewMailgun("mail.impensa.nicolauscg.me", os.Getenv(constants.EnvMailgunApi))),
+		models.NewMailOrmer(mailgun.NewMailgun("mail."+strings.Split(os.Getenv(constants.EnvFrontendUrl), "://")[1], os.Getenv(constants.EnvMailgunApi))),
 		&oauth2.Config{
 			RedirectURL:  fmt.Sprintf("%v/auth/google/callback", os.Getenv(constants.EnvFrontendUrl)),
 			ClientID:     os.Getenv(constants.EnvGoogleOauthClientId),
