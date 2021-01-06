@@ -10,7 +10,7 @@
     "@material-ui/lab": "^4.0.0-alpha.53",
     "@material-ui/pickers": "^3.2.10",
     "autosuggest-highlight": "^3.1.1",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "axios-hooks": "^1.9.0",
     "connected-react-router": "^6.3.1",
     "cookie": "^0.4.0",
